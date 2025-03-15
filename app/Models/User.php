@@ -55,4 +55,11 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Rol::class);
     }
+
+    public function agricultor()
+    {
+        return $this->hasOne(Agricultor::class);
+    }
+
+    // Funciones auxiliares
 }
