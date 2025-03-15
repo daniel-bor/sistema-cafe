@@ -11,9 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('boletas', function (Blueprint $table) {
+        Schema::create('bitacoras', function (Blueprint $table) {
             $table->id();
+            $table->string('entidad', 20);
+            $table->text('valor_anterior');
+            $table->text('valor_nuevo');
+            $table->string('accion', 20);
+            $table->string('ip', 20);
+            $table->foreignId('usuario_id')->constrained('usuarios');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -22,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('boletas');
+        Schema::dropIfExists('bitacoras');
     }
 };

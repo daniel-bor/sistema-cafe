@@ -11,9 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('solicitud_pesajes', function (Blueprint $table) {
+        Schema::create('solicitudes_pesaje', function (Blueprint $table) {
             $table->id();
+            $table->decimal('cantidad_total', 12, 2);
+            $table->foreignId('medida_peso_id')->constrained('medidas_peso');
+            $table->decimal('tolerancia', 5, 2);
+            $table->decimal('precio_unitario', 10, 2);
+            $table->integer('cantidad_parcialidades');
+            $table->foreignId('estado_id')->constrained('estados');
+            $table->foreignId('agricultor_id')->constrained('agricultores');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -22,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('solicitud_pesajes');
+        Schema::dropIfExists('solicitudes_pesaje');
     }
 };

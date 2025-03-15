@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('estados', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre', 30);
+            $table->string('contexto', 20);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

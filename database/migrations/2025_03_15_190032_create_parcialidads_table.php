@@ -11,9 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parcialidads', function (Blueprint $table) {
+        Schema::create('parcialidades', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pesaje_id')->constrained('pesajes');
+            $table->foreignId('transporte_id')->constrained('transportes');
+            $table->foreignId('transportista_id')->constrained('transportistas');
+            $table->decimal('peso', 12, 2);
+            $table->string('tipo_medida', 20);
+            $table->datetime('fecha_recepcion')->nullable();
+            $table->foreignId('estado_id')->constrained('estados');
+            $table->string('codigo_qr', 50)->unique();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -22,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('parcialidads');
+        Schema::dropIfExists('parcialidades');
     }
 };

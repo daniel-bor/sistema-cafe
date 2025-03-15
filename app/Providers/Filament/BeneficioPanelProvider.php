@@ -25,8 +25,9 @@ class BeneficioPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('beneficio')
-            ->path('beneficio')
+            ->path('/')
             ->login()
+
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -52,6 +53,9 @@ class BeneficioPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->unsavedChangesAlerts()
+            ->spa()
+            ->registration();
     }
 }

@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'rol_id',
+        'activo',
     ];
 
     /**
@@ -44,5 +46,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the rol that owns the user.
+     */
+    public function rol()
+    {
+        return $this->belongsTo(Rol::class);
     }
 }
