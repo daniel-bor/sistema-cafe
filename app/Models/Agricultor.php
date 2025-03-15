@@ -16,4 +16,11 @@ class Agricultor extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // Funciones auxiliares
+
+    public function getNombreCompletoAttribute()
+    {
+        return $this->attributes['nombre'] . ' ' . $this->attributes['apellido'];
+    }
 }
