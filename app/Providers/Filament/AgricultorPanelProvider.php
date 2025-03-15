@@ -18,23 +18,24 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class BeneficioPanelProvider extends PanelProvider
+class AgricultorPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('beneficio')
-            ->path('/beneficio')
-            ->login()
+            ->default()
+            ->id('agricultor')
+            ->path('')
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Green,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->login()
+            ->discoverResources(in: app_path('Filament/Agricultor/Resources'), for: 'App\\Filament\\Agricultor\\Resources')
+            ->discoverPages(in: app_path('Filament/Agricultor/Pages'), for: 'App\\Filament\\Agricultor\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Agricultor/Widgets'), for: 'App\\Filament\\Agricultor\\Widgets')
             ->widgets([])
             ->middleware([
                 EncryptCookies::class,
@@ -50,9 +51,7 @@ class BeneficioPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->unsavedChangesAlerts()
             ->spa()
-            ->registration()
-            ->passwordReset();
+            ->profile(isSimple: false);
     }
 }
