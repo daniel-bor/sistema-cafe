@@ -24,22 +24,54 @@ class TransportistaResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('cui')
+                    ->label('CUI')
                     ->required(),
                 Forms\Components\TextInput::make('nombre_completo')
                     ->required(),
                 Forms\Components\DatePicker::make('fecha_nacimiento')
+                    ->closeOnDateSelection()
+                    ->displayFormat('d/m/Y')
+                    ->maxDate(now()->subYears(18))
+                    ->native(false)
+                    ->timezone('America/Guatemala')
                     ->required(),
-                Forms\Components\TextInput::make('tipo_licencia')
+                Forms\Components\Select::make('tipo_licencia')
+                    ->options(\App\Enums\TipoLicencia::labels())
+                    ->native(false)
                     ->required(),
                 Forms\Components\DatePicker::make('fecha_vencimiento_licencia')
+                    ->closeOnDateSelection()
+                    ->displayFormat('d/m/Y')
+                    ->minDate(now()->addDays(1))
+                    ->native(false)
+                    ->timezone('America/Guatemala')
                     ->required(),
-                Forms\Components\TextInput::make('agricultor_id')
+                Forms\Components\Select::make('agricultor_id')
+                    ->relationship('agricultor', 'nombre')
+                    ->getOptionLabelFromRecordUsing(fn($record) => $record->nombre_completo)
+                    ->native(false)
                     ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('estado_id')
-                    ->required()
-                    ->numeric(),
+                    ->visible(fn() => auth()->user()->rol_id === 2),
                 Forms\Components\Toggle::make('disponible')
+                    ->required()
+                    ->onIcon('heroicon-m-check')
+                    ->offIcon('heroicon-m-x-mark')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->inline(false),
+                Forms\Components\FileUpload::make('foto')
+                    ->image()
+                    ->maxSize(2048)
+                    ->disk('public')
+                    ->directory('transportistas')
+                    ->avatar()
+                    ->imageEditor()
+                    ->imageEditorAspectRatios([
+                        '1:1',
+                    ])
+                    ->imageEditorMode(2)
+                    ->imageResizeMode('cover')
+                    ->imageCropAspectRatio('1:1')
                     ->required(),
             ]);
     }

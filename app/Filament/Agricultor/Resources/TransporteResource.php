@@ -31,6 +31,10 @@ class TransporteResource extends Resource
                     ->maxLength(50)
                     ->minLength(3)
                     ->required(),
+                Forms\Components\TextInput::make('modelo')
+                    ->maxLength(50)
+                    ->minLength(3)
+                    ->required(),
                 Forms\Components\Select::make('color')
                     ->options([
                         'Blanco' => 'Blanco',
