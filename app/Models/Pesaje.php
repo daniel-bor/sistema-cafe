@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pesaje extends Model
 {
+    use SoftDeletes;
     protected $fillable = ['medida_peso_id', 'peso_total', 'estado_id', 'solicitud_id', 'cuenta_id', 'fecha_creacion', 'fecha_inicio', 'fecha_cierre'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
