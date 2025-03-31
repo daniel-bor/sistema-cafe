@@ -38,7 +38,8 @@ class DatabaseSeeder extends Seeder
             'activo' => true,
         ]);
 
-        Estado::create(['nombre' => 'ACTIVO', 'contexto' => 'AGRICULTOR'], ['nombre' => 'INACTIVO', 'contexto' => 'AGRICULTOR']);
+        Estado::create(['nombre' => 'ACTIVO', 'contexto' => 'AGRICULTOR']);
+        Estado::create(['nombre' => 'INACTIVO', 'contexto' => 'AGRICULTOR']);
 
         Agricultor::create([
             'nombre' => 'Agricultor 1',

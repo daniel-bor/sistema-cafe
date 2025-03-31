@@ -27,6 +27,11 @@ class Transportista extends Model
         return $this->belongsTo(Estado::class);
     }
 
+    public function getTipoLicenciaLabelAttribute()
+    {
+        return $this->tipo_licencia->label();
+    }
+
     // al crear un registro establecer el estado como activo
     protected static function boot()
     {

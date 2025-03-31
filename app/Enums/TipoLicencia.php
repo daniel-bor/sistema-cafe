@@ -16,4 +16,14 @@ enum TipoLicencia: int
             self::C->value => 'Licencia C',
         ];
     }
+
+    // Get the label for the enum value
+    public function label(): string
+    {
+        return self::labels()[$this->value];
+    }
+    public function toString(): string
+    {
+        return $this->label();
+    }
 }
