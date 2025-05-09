@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('boletas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('parcialidad_id')->constrained('parcialidades');
-            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->string('concepto');
             $table->decimal('monto', 10, 2);
             $table->string('numero_documento')->nullable();

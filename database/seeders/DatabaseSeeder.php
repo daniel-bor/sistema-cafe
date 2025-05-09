@@ -7,6 +7,7 @@ use App\Models\Rol;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use App\Models\Estado;
+use App\Models\MedidaPeso;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -40,6 +41,7 @@ class DatabaseSeeder extends Seeder
 
         Estado::create(['nombre' => 'ACTIVO', 'contexto' => 'AGRICULTOR']);
         Estado::create(['nombre' => 'INACTIVO', 'contexto' => 'AGRICULTOR']);
+        Estado::create(['nombre' => 'PENDIENTE', 'contexto' => 'PESAJE']);
 
         Agricultor::create([
             'nombre' => 'Agricultor 1',
@@ -49,6 +51,11 @@ class DatabaseSeeder extends Seeder
             'direccion' => 'Direccion 1',
             'observaciones' => 'Observaciones 1',
             'user_id' => 1,
+        ]);
+
+        MedidaPeso::create([
+            'nombre' => 'Kilogramo',
+            'simbolo' => 'kg',
         ]);
     }
 }

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('no_cuenta', 20);
             $table->foreignId('estado_id')->constrained('estados');
             $table->foreignId('agricultor_id')->constrained('agricultores');
-            $table->foreignId('solicitud_id')->constrained('solicitudes_pesaje');
             $table->decimal('tolerancia', 5, 2);
             $table->timestamps();
             $table->softDeletes();
