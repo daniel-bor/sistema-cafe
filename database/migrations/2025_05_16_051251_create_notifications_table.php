@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cuentas', function (Blueprint $table) {
-            $table->id();
-            $table->string('no_cuenta', 20);
-            $table->foreignId('estado_id')->constrained('estados');
-            $table->foreignId('agricultor_id')->constrained('agricultores');
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cuentas');
+        Schema::dropIfExists('notifications');
     }
 };
