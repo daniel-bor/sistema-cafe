@@ -21,6 +21,6 @@ class Cuenta extends Model
 
     public function solicitud()
     {
-        return $this->belongsTo(SolicitudPesaje::class);
+        return $this->belongsTo(Pesaje::class)->where('estado_id', 1);
     }
 }

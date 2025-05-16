@@ -53,6 +53,7 @@ class BeneficioPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->spa()
             ->registration()
-            ->passwordReset();
+            ->passwordReset()
+            ->sidebarCollapsibleOnDesktop();
     }
 }

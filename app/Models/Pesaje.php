@@ -2,12 +2,32 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoParcialidad;
+use App\Enums\EstadoPesaje;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pesaje extends Model
 {
-    protected $fillable = ['medida_peso_id', 'peso_total', 'estado_id', 'solicitud_id', 'cuenta_id', 'fecha_creacion', 'fecha_inicio', 'fecha_cierre'];
+    use SoftDeletes;
+
+    protected $fillable = [
+        'cantidad_total',
+        'tolerancia',
+        'precio_unitario',
+        'fecha_inicio',
+        'fecha_cierre',
+        'estado',
+        'cuenta_id',
+        'agricultor_id',
+        'medida_peso_id',
+    ];
+
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
+
+    protected $casts = [
+        'estado' => EstadoPesaje::class,
+    ];
 
     public function medidaPeso()
     {
@@ -21,11 +41,43 @@ class Pesaje extends Model
 
     public function solicitud()
     {
-        return $this->belongsTo(SolicitudPesaje::class);
+        return $this->belongsTo(Pesaje::class)->where('estado_id', 1);
     }
 
     public function cuenta()
     {
         return $this->belongsTo(Cuenta::class);
+    }
+
+    public function agricultor()
+    {
+        return $this->belongsTo(Agricultor::class);
+    }
+
+    public function parcialidades()
+    {
+        return $this->hasMany(Parcialidad::class);
+    }
+
+    // Funciones auxiliares
+    public function getCantidadParcialidadesAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
+            ->count();
+    }
+
+    public function getCantidadEntregasAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', EstadoParcialidad::PESADO)
+            ->count();
+    }
+
+    public function getTotalParcialidadesAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
+            ->sum('peso');
     }
 }

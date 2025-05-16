@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('valor_nuevo');
             $table->string('accion', 20);
             $table->string('ip', 20);
-            $table->foreignId('usuario_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('users');
             $table->timestamps();
             $table->softDeletes();
         });

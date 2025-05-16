@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Agricultor\Resources\TransporteResource\Pages;
+namespace App\Filament\Agricultor\Resources\PesajeResource\Pages;
 
-use App\Filament\Agricultor\Resources\TransporteResource;
+use App\Filament\Agricultor\Resources\PesajeResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListTransportes extends ListRecords
+class ListPesajes extends ListRecords
 {
-    protected static string $resource = TransporteResource::class;
+    protected static string $resource = PesajeResource::class;
 
     protected function getHeaderActions(): array
     {
