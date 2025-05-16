@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cuenta extends Model
 {
-    protected $fillable = ['no_cuenta', 'solicitud_id', 'estado_id', 'agricultor_id', 'tolerancia'];
+    protected $fillable = ['no_cuenta', 'estado_id', 'agricultor_id'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
     public function agricultor()
@@ -19,8 +19,8 @@ class Cuenta extends Model
         return $this->belongsTo(Estado::class);
     }
 
-    public function solicitud()
+    public function pesajes()
     {
-        return $this->belongsTo(Pesaje::class)->where('estado_id', 1);
+        return $this->hasMany(Pesaje::class);
     }
 }

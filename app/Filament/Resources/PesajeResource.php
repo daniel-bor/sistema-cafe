@@ -8,9 +8,11 @@ use App\Models\Pesaje;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\EstadoPesaje;
+use App\Services\CuentaService;
 use Filament\Resources\Resource;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use App\Filament\Resources\PesajeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PesajeResource\RelationManagers;
@@ -111,13 +113,40 @@ class PesajeResource extends Resource
                         ->label('Aceptar Solicitud')
                         ->color('success')
                         ->action(function (Pesaje $record) {
-                            $record->estado = EstadoPesaje::ACEPTADO;
-                            $record->save();
-                            Notification::make()
-                                ->title('Solicitud aceptada')
-                                ->body('La solicitud de pesaje se actualizó correctamente.')
-                                ->success()
-                                ->send();
+                            DB::transaction(function () use ($record) {
+                                try {
+                                    // Usar el servicio de cuentas para gestionar la cuenta del agricultor
+                                    $cuentaService = app(CuentaService::class);
+
+                                    // Asignar una cuenta al pesaje (crea una nueva si no existe)
+                                    $cuentaService->asignarCuentaAPesaje($record);
+
+                                    // Actualizar el estado del pesaje a ACEPTADO
+                                    $record->estado = EstadoPesaje::ACEPTADO;
+                                    $record->save();
+
+                                    Notification::make()
+                                        ->title('Solicitud aceptada')
+                                        ->body('La solicitud de pesaje se actualizó correctamente y se ha gestionado la cuenta.')
+                                        ->success()
+                                        ->send();
+
+                                    // Verificar implementacion porque no llego
+                                    // Notificar al agricultor
+                                    $recipient = $record->agricultor->user;
+                                    Notification::make()
+                                        ->title('Nueva información')
+                                        ->body('Hay cambios en el estado de un pesaje.')
+                                        ->sendToDatabase($recipient);
+                                } catch (\Exception $e) {
+                                    // Capturar errores y mostrar una notificación
+                                    Notification::make()
+                                        ->title('Error al procesar la solicitud')
+                                        ->body('No se pudo completar la operación: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            });
                         })
                         ->icon('heroicon-o-check-circle')
                         ->requiresConfirmation()
@@ -140,11 +169,7 @@ class PesajeResource extends Resource
                 ])
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    // Tables\Actions\DeleteBulkAction::make(),
-                    // Tables\Actions\ForceDeleteBulkAction::make(),
-                    // Tables\Actions\RestoreBulkAction::make(),
-                ]),
+                Tables\Actions\BulkActionGroup::make([]),
             ]);
     }
 
