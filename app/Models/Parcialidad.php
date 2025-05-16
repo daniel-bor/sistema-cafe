@@ -10,7 +10,7 @@ class Parcialidad extends Model
 {
     use SoftDeletes;
     protected $table = 'parcialidades';
-    protected $fillable = ['pesaje_id', 'transporte_id', 'transportista_id', 'peso', 'tipo_medida', 'fecha_recepcion', 'estado', 'codigo_qr'];
+    protected $fillable = ['pesaje_id', 'transporte_id', 'transportista_id', 'peso', 'fecha_recepcion', 'estado', 'codigo_qr'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [

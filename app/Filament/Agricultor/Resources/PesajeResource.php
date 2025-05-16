@@ -2,16 +2,20 @@
 
 namespace App\Filament\Agricultor\Resources;
 
-use App\Filament\Agricultor\Resources\PesajeResource\Pages;
-use App\Filament\Agricultor\Resources\PesajeResource\RelationManagers;
-use App\Models\Pesaje;
+use App\Enums\EstadoPesaje;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Pesaje;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Agricultor\Resources\PesajeResource\Pages;
+use App\Filament\Agricultor\Resources\PesajeResource\RelationManagers;
+use App\Filament\Agricultor\Resources\PesajeResource\RelationManagers\ParcialidadesRelationManager;
+use App\Models\Estado;
 
 class PesajeResource extends Resource
 {
@@ -27,6 +31,7 @@ class PesajeResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('cantidad_total')
+                    ->minValue(1)
                     ->required()
                     ->numeric()
                     ->maxValue(100000),
@@ -40,23 +45,24 @@ class PesajeResource extends Resource
                 //     ->numeric()
                 //     ->minValue(1)
                 //     ->maxValue(10),
-                Forms\Components\TextInput::make('precio_unitario')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->maxValue(100000)
-                    ->step(0.01)
-                    ->prefix('Q.'),
-            ])
-            ->columns(3);
+            ]);
+        // ->columns(3);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                // Mostrando el ID
+                Tables\Columns\TextColumn::make('id')
+                    ->sortable()
+                    ->label('ID'),
+                // Numero de cuenta
+                Tables\Columns\TextColumn::make('cuenta.no_cuenta')
+                    ->sortable()
+                    ->label('No. Cuenta'),
                 Tables\Columns\TextColumn::make('cantidad_total')
-                    ->numeric()
+                    ->numeric('2', '.', ',')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('medidaPeso.nombre')
                     ->sortable(),
@@ -66,10 +72,15 @@ class PesajeResource extends Resource
                     ->sortable()
                     // Solo usuarios con rol_id 2 pueden ver esta columna
                     ->visible(fn($record) => auth()->user()->rol_id === 2),
-                Tables\Columns\TextColumn::make('precio_unitario')
-                    ->money('GTQ')
-                    ->sortable(),
+                // Tables\Columns\TextColumn::make('precio_unitario')
+                //     ->money('GTQ')
+                //     ->sortable(),
                 Tables\Columns\TextColumn::make('cantidad_parcialidades')
+                    ->label('Parcialidades')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('cantidad_entregas')
+                    ->label('Entregas')
                     ->numeric()
                     ->sortable(),
                 // Tables\Columns\TextColumn::make('fecha_inicio')
@@ -80,6 +91,7 @@ class PesajeResource extends Resource
                 //     ->sortable(),
                 Tables\Columns\TextColumn::make('estado')
                     ->badge()
+                    ->color(fn($state) => $state->getColor())
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cuenta.no_cuenta')
                     ->sortable()
@@ -104,14 +116,33 @@ class PesajeResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\ViewAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->color('warning'),
+                    Tables\Actions\DeleteAction::make(),
+                    // Action para enviar la solicitud de pesaje
+                    Tables\Actions\Action::make('Enviar solicitud')
+                        ->color('success')
+                        ->action(function (Pesaje $record) {
+                            $record->estado = EstadoPesaje::PENDIENTE;
+                            $record->save();
+                            Notification::make()
+                                ->title('Solicitud enviada')
+                                ->body('La solicitud de pesaje ha sido enviada.')
+                                ->success()
+                                ->send();
+                        })
+                        ->icon('heroicon-o-paper-airplane')
+                        ->requiresConfirmation()
+                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::NUEVO),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\ForceDeleteBulkAction::make(),
+                    // Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -119,7 +150,7 @@ class PesajeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ParcialidadesRelationManager::class,
         ];
     }
 
@@ -127,9 +158,9 @@ class PesajeResource extends Resource
     {
         return [
             'index' => Pages\ListPesajes::route('/'),
-            // 'create' => Pages\CreatePesaje::route('/create'),
+            'create' => Pages\CreatePesaje::route('/create'),
             // 'view' => Pages\ViewPesaje::route('/{record}'),
-            // 'edit' => Pages\EditPesaje::route('/{record}/edit'),
+            'edit' => Pages\EditPesaje::route('/{record}/edit'),
         ];
     }
 

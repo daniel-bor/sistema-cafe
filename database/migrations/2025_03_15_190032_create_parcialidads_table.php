@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreignId('transporte_id')->constrained('transportes');
             $table->foreignId('transportista_id')->constrained('transportistas');
             $table->decimal('peso', 12, 2);
-            $table->string('tipo_medida', 20);
+            $table->string('tipo_medida', 20)->nullable(); //Eliminar
             $table->datetime('fecha_recepcion')->nullable();
-            $table->foreignId('estado_id')->constrained('estados');
-            $table->string('codigo_qr', 50)->unique();
+            $table->foreignId('estado_id')->constrained('estados'); // Reemplazado por enum
+            $table->string('codigo_qr', 50)->nullable(); //Eliminar
             $table->timestamps();
             $table->softDeletes();
         });

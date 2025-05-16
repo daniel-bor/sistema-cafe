@@ -15,7 +15,6 @@ class Pesaje extends Model
         'cantidad_total',
         'tolerancia',
         'precio_unitario',
-        'cantidad_parcialidades',
         'fecha_inicio',
         'fecha_cierre',
         'estado',
@@ -66,5 +65,19 @@ class Pesaje extends Model
         return $this->parcialidades()
             ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
             ->count();
+    }
+
+    public function getCantidadEntregasAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', EstadoParcialidad::PESADO)
+            ->count();
+    }
+
+    public function getTotalParcialidadesAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
+            ->sum('peso');
     }
 }

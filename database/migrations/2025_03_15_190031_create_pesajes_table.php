@@ -16,13 +16,13 @@ return new class extends Migration
             $table->id();
             $table->decimal('cantidad_total', 12, 2);
             $table->decimal('tolerancia', 5, 2)->default(5);
-            $table->decimal('precio_unitario', 10, 2);
+            $table->decimal('precio_unitario', 10, 2)->nullable();
             $table->datetime('fecha_inicio')->nullable();
             $table->datetime('fecha_cierre')->nullable();
             $table->foreignId('cuenta_id')->nullable()->constrained('cuentas');
             $table->foreignId('agricultor_id')->constrained('agricultores');
             $table->foreignId('medida_peso_id')->constrained('medidas_peso');
-            $table->tinyInteger('estado')->default(EstadoPesaje::PENDIENTE->value);
+            $table->tinyInteger('estado')->default(EstadoPesaje::NUEVO->value);
             $table->timestamps();
             $table->softDeletes();
         });

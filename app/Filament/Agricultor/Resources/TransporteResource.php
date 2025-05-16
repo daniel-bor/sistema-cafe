@@ -63,7 +63,7 @@ class TransporteResource extends Resource
                 Tables\Columns\TextColumn::make('color')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('estado.nombre')
-                    ->numeric()
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('disponible')
                     ->boolean(),

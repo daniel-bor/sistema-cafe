@@ -2,16 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PesajeResource\Pages;
-use App\Filament\Resources\PesajeResource\RelationManagers;
-use App\Models\Pesaje;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Pesaje;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\EstadoPesaje;
+use Filament\Resources\Resource;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\PesajeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\PesajeResource\RelationManagers;
 
 class PesajeResource extends Resource
 {
@@ -57,30 +59,56 @@ class PesajeResource extends Resource
     {
         return $table
             ->columns([
+                // Mostrando el ID
+                Tables\Columns\TextColumn::make('id')
+                    ->sortable()
+                    ->label('ID'),
+                // Numero de cuenta
+                Tables\Columns\TextColumn::make('cuenta.no_cuenta')
+                    ->sortable()
+                    ->label('No. Cuenta'),
                 Tables\Columns\TextColumn::make('cantidad_total')
+                    ->numeric('2', '.', ',')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('medidaPeso.nombre')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tolerancia')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('precio_unitario')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('fecha_inicio')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('fecha_cierre')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('estado')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('cuenta_id')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('agricultor_id')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('medida_peso_id')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->suffix('%')
+                    ->numeric()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    // Solo usuarios con rol_id 2 pueden ver esta columna
+                    ->visible(fn($record) => auth()->user()->rol_id === 2),
+                // Tables\Columns\TextColumn::make('precio_unitario')
+                //     ->money('GTQ')
+                //     ->sortable(),
+                Tables\Columns\TextColumn::make('cantidad_parcialidades')
+                    ->label('Parcialidades')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('cantidad_entregas')
+                    ->label('Entregas')
+                    ->numeric()
+                    ->sortable(),
+                // Tables\Columns\TextColumn::make('fecha_inicio')
+                //     ->dateTime()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('fecha_cierre')
+                //     ->dateTime()
+                //     ->sortable(),
+                Tables\Columns\TextColumn::make('estado')
+                    ->badge()
+                    ->color(fn($state) => $state->getColor())
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('cuenta.no_cuenta')
+                    ->sortable()
+                    ->visible(fn($record) => $record),
+                Tables\Columns\TextColumn::make('agricultor.nombre')
+                    ->sortable()
+                    ->visible(fn($record) => auth()->user()->rol_id === 2),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
+                    ->dateTime('d/m/Y')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -94,17 +122,33 @@ class PesajeResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                // Tables\Actions\ViewAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->color('warning'),
+                    Tables\Actions\DeleteAction::make(),
+                    // Action para enviar la solicitud de pesaje
+                    Tables\Actions\Action::make('Enviar solicitud')
+                        ->color('success')
+                        ->action(function (Pesaje $record) {
+                            $record->estado = EstadoPesaje::PENDIENTE;
+                            $record->save();
+                            Notification::make()
+                                ->title('Solicitud enviada')
+                                ->body('La solicitud de pesaje ha sido enviada.')
+                                ->success()
+                                ->send();
+                        })
+                        ->icon('heroicon-o-paper-airplane')
+                        ->requiresConfirmation()
+                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::NUEVO),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\ForceDeleteBulkAction::make(),
+                    // Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }

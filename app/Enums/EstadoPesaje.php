@@ -6,6 +6,7 @@ use Filament\Support\Contracts\HasLabel;
 
 enum EstadoPesaje: int implements HasLabel
 {
+    case NUEVO = 0;
     case PENDIENTE = 1;
     case ACEPTADO = 2;
     case RECHAZADO = 3;
@@ -21,10 +22,11 @@ enum EstadoPesaje: int implements HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
+            self::NUEVO => 'Nuevo',
             self::PENDIENTE => 'Pendiente',
             self::ACEPTADO => 'Aceptado',
             self::RECHAZADO => 'Rechazado',
-            self::PROCESO => 'Proceso',
+            self::PROCESO => 'En Proceso',
             self::FINALIZADO => 'Finalizado',
         };
     }
@@ -32,6 +34,7 @@ enum EstadoPesaje: int implements HasLabel
     public function getColor(): string | array | null
     {
         return match ($this) {
+            self::NUEVO => 'info',
             self::PENDIENTE => 'warning',
             self::ACEPTADO => 'success',
             self::RECHAZADO => 'danger',

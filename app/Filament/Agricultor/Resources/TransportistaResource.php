@@ -28,6 +28,7 @@ class TransportistaResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('cui')
                     ->label('CUI')
+                    ->mask('9999999999999')
                     ->required(),
                 Forms\Components\TextInput::make('nombre_completo')
                     ->required(),
@@ -35,8 +36,7 @@ class TransportistaResource extends Resource
                     ->closeOnDateSelection()
                     ->displayFormat('d/m/Y')
                     ->maxDate(now()->subYears(18))
-                    ->native(false)
-                    ->timezone('America/Guatemala')
+                    // ->native(false)
                     ->required(),
                 Forms\Components\Select::make('tipo_licencia')
                     ->options(\App\Enums\TipoLicencia::labels())
@@ -46,8 +46,7 @@ class TransportistaResource extends Resource
                     ->closeOnDateSelection()
                     ->displayFormat('d/m/Y')
                     ->minDate(now()->addDays(1))
-                    ->native(false)
-                    ->timezone('America/Guatemala')
+                    // ->native(false)
                     ->required(),
                 Forms\Components\Select::make('agricultor_id')
                     ->relationship('agricultor', 'nombre')
