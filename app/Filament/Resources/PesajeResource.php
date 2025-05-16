@@ -14,44 +14,27 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PesajeResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PesajeResource\RelationManagers;
+use App\Filament\Resources\PesajeResource\RelationManagers\ParcialidadesRelationManager;
 
 class PesajeResource extends Resource
 {
     protected static ?string $model = Pesaje::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-inbox';
-
-    protected static ?string $modelLabel = 'Pesaje';
-    protected static ?string $pluralModelLabel = 'Pesajes';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('cantidad_total')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('tolerancia')
+                    ->minValue(1)
                     ->required()
                     ->numeric()
-                    ->default(5.00),
-                Forms\Components\TextInput::make('precio_unitario')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\DateTimePicker::make('fecha_inicio'),
-                Forms\Components\DateTimePicker::make('fecha_cierre'),
-                Forms\Components\TextInput::make('estado')
-                    ->numeric()
-                    ->default(1),
-                Forms\Components\TextInput::make('cuenta_id')
-                    ->numeric()
-                    ->default(null),
-                Forms\Components\TextInput::make('agricultor_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('medida_peso_id')
-                    ->required()
-                    ->numeric(),
+                    ->maxValue(100000),
+                Forms\Components\Select::make('medida_peso_id')
+                    ->relationship('medidaPeso', 'nombre')
+                    ->native(false)
+                    ->required(),
             ]);
     }
 
@@ -122,26 +105,38 @@ class PesajeResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                // Tables\Actions\ViewAction::make(),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make()
-                        ->color('warning'),
-                    Tables\Actions\DeleteAction::make(),
-                    // Action para enviar la solicitud de pesaje
-                    Tables\Actions\Action::make('Enviar solicitud')
+                    // Actions para aceptar o rechazar la solicitud
+                    Tables\Actions\Action::make('Aceptar')
+                        ->label('Aceptar Solicitud')
                         ->color('success')
                         ->action(function (Pesaje $record) {
-                            $record->estado = EstadoPesaje::PENDIENTE;
+                            $record->estado = EstadoPesaje::ACEPTADO;
                             $record->save();
                             Notification::make()
-                                ->title('Solicitud enviada')
-                                ->body('La solicitud de pesaje ha sido enviada.')
+                                ->title('Solicitud aceptada')
+                                ->body('La solicitud de pesaje se actualizó correctamente.')
                                 ->success()
                                 ->send();
                         })
-                        ->icon('heroicon-o-paper-airplane')
+                        ->icon('heroicon-o-check-circle')
                         ->requiresConfirmation()
-                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::NUEVO),
+                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::PENDIENTE),
+                    Tables\Actions\Action::make('Rechazar')
+                        ->label('Rechazar Solicitud')
+                        ->color('danger')
+                        ->action(function (Pesaje $record) {
+                            $record->estado = EstadoPesaje::RECHAZADO;
+                            $record->save();
+                            Notification::make()
+                                ->title('Solicitud rechazada')
+                                ->body('La solicitud de pesaje se actualizó correctamente.')
+                                ->success()
+                                ->send();
+                        })
+                        ->icon('heroicon-o-x-circle')
+                        ->requiresConfirmation()
+                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::PENDIENTE),
                 ])
             ])
             ->bulkActions([
@@ -153,10 +148,18 @@ class PesajeResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            ParcialidadesRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManagePesajes::route('/'),
+            'index' => Pages\ListPesajes::route('/'),
+            'view' => Pages\ViewPesaje::route('/{record}'),
         ];
     }
 

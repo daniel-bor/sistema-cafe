@@ -53,6 +53,8 @@ class AgricultorPanelProvider extends PanelProvider
             ])
             ->spa()
             ->sidebarCollapsibleOnDesktop()
-            ->profile(isSimple: false);
+            ->profile(isSimple: false)
+            ->databaseNotifications()
+            ->unsavedChangesAlerts();
     }
 }
