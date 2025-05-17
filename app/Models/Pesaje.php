@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\EstadoParcialidad;
 use App\Enums\EstadoPesaje;
+use App\Enums\EstadoParcialidad;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -32,11 +32,6 @@ class Pesaje extends Model
     public function medidaPeso()
     {
         return $this->belongsTo(MedidaPeso::class);
-    }
-
-    public function estado()
-    {
-        return $this->belongsTo(Estado::class);
     }
 
     public function solicitud()

@@ -18,24 +18,25 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class BeneficioPanelProvider extends PanelProvider
+class PesoCabalPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('beneficio')
-            ->path('/beneficio')
-            ->login()
+            ->id('pesoCabal')
+            ->path('/peso-cabal')
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Cyan,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/PesoCabal/Resources'), for: 'App\\Filament\\PesoCabal\\Resources')
+            ->discoverPages(in: app_path('Filament/PesoCabal/Pages'), for: 'App\\Filament\\PesoCabal\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([])
+            ->discoverWidgets(in: app_path('Filament/PesoCabal/Widgets'), for: 'App\\Filament\\PesoCabal\\Widgets')
+            ->widgets([
+
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -50,9 +51,11 @@ class BeneficioPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->unsavedChangesAlerts()
             ->spa()
             ->passwordReset()
-            ->sidebarCollapsibleOnDesktop();
+            ->unsavedChangesAlerts()
+            ->sidebarCollapsibleOnDesktop()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling(null);
     }
 }
