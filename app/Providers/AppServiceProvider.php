@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Pesaje;
+use App\Observers\PesajeObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Registrar el servicio de cuentas como singleton en el contenedor
+        $this->app->singleton(\App\Services\CuentaService::class);
     }
 
     /**
@@ -19,6 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Pesaje::observe(PesajeObserver::class);
     }
 }

@@ -31,6 +31,10 @@ class TransporteResource extends Resource
                     ->maxLength(50)
                     ->minLength(3)
                     ->required(),
+                // Forms\Components\TextInput::make('modelo')
+                //     ->maxLength(50)
+                //     ->minLength(3)
+                //     ->required(),
                 Forms\Components\Select::make('color')
                     ->options([
                         'Blanco' => 'Blanco',
@@ -59,7 +63,7 @@ class TransporteResource extends Resource
                 Tables\Columns\TextColumn::make('color')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('estado.nombre')
-                    ->numeric()
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('disponible')
                     ->boolean(),

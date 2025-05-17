@@ -52,6 +52,10 @@ class AgricultorPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->spa()
-            ->profile(isSimple: false);
+            ->sidebarCollapsibleOnDesktop()
+            ->profile(isSimple: false)
+            ->databaseNotifications()
+            ->databaseNotificationsPolling(null)
+            ->unsavedChangesAlerts();
     }
 }

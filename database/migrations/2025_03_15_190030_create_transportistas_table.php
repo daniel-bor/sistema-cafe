@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transportistas', function (Blueprint $table) {
-            $table->string('cui', 20)->primary();
+            $table->id();
+            $table->string('cui', 20);
             $table->string('nombre_completo', 100);
             $table->date('fecha_nacimiento');
             $table->string('tipo_licencia', 20);
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->foreignId('agricultor_id')->constrained('agricultores');
             $table->foreignId('estado_id')->constrained('estados');
             $table->boolean('disponible')->default(true);
+            $table->string('foto', 200)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
