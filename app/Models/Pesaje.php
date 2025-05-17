@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\EstadoParcialidad;
 use App\Enums\EstadoPesaje;
+use App\Enums\EstadoParcialidad;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 

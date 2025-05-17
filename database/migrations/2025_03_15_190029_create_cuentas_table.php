@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('cuentas', function (Blueprint $table) {
             $table->id();
             $table->string('no_cuenta', 20);
-            $table->tinyInteger('estado')->default(EstadoCuentaEnum::CREADA->value);
+            $table->tinyInteger('estado')->default(EstadoCuentaEnum::CUENTA_CREADA->value);
             $table->foreignId('agricultor_id')->constrained('agricultores');
             $table->timestamps();
             $table->softDeletes();

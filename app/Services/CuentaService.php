@@ -41,7 +41,7 @@ class CuentaService
         $noCuenta = $this->generarNumeroCuenta($agricultorId);
 
         // Estado por defecto para una cuenta nueva (1 = Activa normalmente)
-        $estado= EstadoCuentaEnum::CREADA;
+        $estado= EstadoCuentaEnum::CUENTA_CREADA;
 
         return Cuenta::create([
             'no_cuenta' => $noCuenta,

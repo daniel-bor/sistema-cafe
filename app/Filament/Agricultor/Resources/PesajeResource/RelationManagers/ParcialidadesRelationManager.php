@@ -135,6 +135,7 @@ class ParcialidadesRelationManager extends RelationManager
                             }
 
                             $record->estado = EstadoParcialidad::ENVIADO;
+                            $record->fecha_envio = now();
                             $record->save();
 
                             // Actualizar estado de transporte y transportista a no disponible
