@@ -59,22 +59,12 @@ class PesajeResource extends Resource
                     ->label('ID'),
                 // Numero de cuenta
                 Tables\Columns\TextColumn::make('cuenta.no_cuenta')
-                    ->sortable()
-                    ->label('No. Cuenta'),
+                    ->label('Cuenta'),
                 Tables\Columns\TextColumn::make('cantidad_total')
                     ->numeric('2', '.', ',')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('medidaPeso.nombre')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tolerancia')
-                    ->suffix('%')
-                    ->numeric()
-                    ->sortable()
-                    // Solo usuarios con rol_id 2 pueden ver esta columna
-                    ->visible(fn($record) => auth()->user()->rol_id === 2),
-                // Tables\Columns\TextColumn::make('precio_unitario')
-                //     ->money('GTQ')
-                //     ->sortable(),
                 Tables\Columns\TextColumn::make('cantidad_parcialidades')
                     ->label('Parcialidades')
                     ->numeric()
@@ -93,12 +83,6 @@ class PesajeResource extends Resource
                     ->badge()
                     ->color(fn($state) => $state->getColor())
                     ->sortable(),
-                Tables\Columns\TextColumn::make('cuenta.no_cuenta')
-                    ->sortable()
-                    ->visible(fn($record) => $record),
-                Tables\Columns\TextColumn::make('agricultor.nombre')
-                    ->sortable()
-                    ->visible(fn($record) => auth()->user()->rol_id === 2),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y')

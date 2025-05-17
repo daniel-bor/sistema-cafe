@@ -2,6 +2,7 @@
 
 namespace App\Filament\Agricultor\Resources\PesajeResource\RelationManagers;
 
+use App\Enums\EstadoParcialidad;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -64,7 +65,7 @@ class ParcialidadesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('transportista.nombre_completo')
                     ->label('Transportista')
                     ->sortable(),
-                    // Imagen tipo avatar del transportista
+                // Imagen tipo avatar del transportista
                 Tables\Columns\ImageColumn::make('transportista.foto')
                     ->label('Foto')
                     ->circular()
@@ -108,8 +109,47 @@ class ParcialidadesRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    // Tables\Actions\Action::make('verQR')
+                    //     ->label('Ver QR')
+                    //     ->url(fn(Model $record) => route('filament.resources.pesajes.pesaje.qr', $record->id))
+                    //     ->icon('heroicon-o-qrcode')
+                    //     ->openUrlInNewTab()
+                    //     ->color('success'),
+                    Tables\Actions\Action::make('enviar')
+                        ->label('Realizar envío')
+                        ->requiresConfirmation()
+                        ->icon('heroicon-o-truck')
+                        ->color('info')
+                        ->action(function (Parcialidad $record) {
+                            // Validar que el transporte y el transportista estén disponibles
+                            if (!$record->transporte->disponible || !$record->transportista->disponible) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('El transporte o el transportista no están disponibles.')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            $record->estado = EstadoParcialidad::ENVIADO;
+                            $record->save();
+
+                            // Actualizar estado de transporte y transportista a no disponible
+                            $record->transporte->disponible = false;
+                            $record->transporte->save();
+                            $record->transportista->disponible = false;
+                            $record->transportista->save();
+
+                            Notification::make()
+                                ->title('Éxito')
+                                ->body('Parcialidad enviada correctamente.')
+                                ->success()
+                                ->send();
+                        }),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

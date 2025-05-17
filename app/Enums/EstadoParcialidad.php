@@ -5,12 +5,12 @@ use Filament\Support\Contracts\HasLabel;
 
 enum EstadoParcialidad: int implements HasLabel
 {
-    case PENDIENTE = 1;
-    case ENVIADO = 2;
-    case RECIBIDO = 3;
-    case RECHAZADO = 4;
-    case PESADO = 5; // Ultimo estado hasta ahora
-    case FINALIZADO = 6;
+    case PENDIENTE = 0;
+    case ENVIADO = 1;
+    case RECIBIDO = 2;
+    case RECHAZADO = 3;
+    case PESADO = 4; // Ultimo estado hasta ahora
+    case FINALIZADO = 5;
 
     /**
      * Obtener todas las opciones como array para selects y forms

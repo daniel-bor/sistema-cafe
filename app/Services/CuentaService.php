@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\EstadoCuentaEnum;
 use App\Models\Cuenta;
+use App\Models\Estado;
 use App\Models\Pesaje;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +14,6 @@ class CuentaService
      * Crea una nueva cuenta o recupera una existente para un agricultor.
      *
      * @param int $agricultorId El ID del agricultor
-     * @param int $pesajeId El ID del pesaje que origina la solicitud (opcional)
      * @return Cuenta La cuenta creada o recuperada
      */
     public function obtenerOCrearCuentaParaAgricultor(int $agricultorId, ?int $pesajeId = null): Cuenta
@@ -32,22 +33,20 @@ class CuentaService
      * Crea una nueva cuenta para un agricultor.
      *
      * @param int $agricultorId El ID del agricultor
-     * @param int|null $solicitudId El ID del pesaje que origina la solicitud (opcional)
      * @return Cuenta La cuenta creada
      */
-    public function crearCuenta(int $agricultorId, ?int $solicitudId = null): Cuenta
+    public function crearCuenta(int $agricultorId): Cuenta
     {
         // Generar un número de cuenta único
         $noCuenta = $this->generarNumeroCuenta($agricultorId);
 
         // Estado por defecto para una cuenta nueva (1 = Activa normalmente)
-        $estadoId = 1;
+        $estado= EstadoCuentaEnum::CREADA;
 
         return Cuenta::create([
             'no_cuenta' => $noCuenta,
             'agricultor_id' => $agricultorId,
-            'estado_id' => $estadoId,
-            'solicitud_id' => $solicitudId,
+            'estado' => $estado,
         ]);
     }
 
@@ -92,7 +91,7 @@ class CuentaService
         $secuencial = Cuenta::count() + 1;
 
         // Formatear el secuencial como un número de 6 dígitos
-        $secuencial = str_pad($secuencial, 6, '0', STR_PAD_LEFT);
+        $secuencial = str_pad($secuencial, 4, '0', STR_PAD_LEFT);
 
         // Combinar todo para formar un número de cuenta único
         return "{$prefijo}-{$anio}-{$agricultorId}-{$secuencial}";

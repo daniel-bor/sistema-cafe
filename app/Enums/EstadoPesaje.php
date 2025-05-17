@@ -10,8 +10,8 @@ enum EstadoPesaje: int implements HasLabel
     case PENDIENTE = 1;
     case ACEPTADO = 2;
     case RECHAZADO = 3;
-    case PROCESO = 4;
-    case FINALIZADO = 5;
+    case PESAJE_INICIADO = 4;
+    case PESAJE_FINALIZADO = 5;
 
     /**
      * Obtener todas las opciones como array para selects y forms
@@ -26,8 +26,8 @@ enum EstadoPesaje: int implements HasLabel
             self::PENDIENTE => 'Pendiente',
             self::ACEPTADO => 'Aceptado',
             self::RECHAZADO => 'Rechazado',
-            self::PROCESO => 'En Proceso',
-            self::FINALIZADO => 'Finalizado',
+            self::PESAJE_INICIADO => 'Pesaje Iniciado',
+            self::PESAJE_FINALIZADO => 'Pesaje Finalizado',
         };
     }
 
@@ -38,8 +38,8 @@ enum EstadoPesaje: int implements HasLabel
             self::PENDIENTE => 'warning',
             self::ACEPTADO => 'success',
             self::RECHAZADO => 'danger',
-            self::PROCESO => 'primary',
-            self::FINALIZADO => 'secondary',
+            self::PESAJE_INICIADO => 'primary',
+            self::PESAJE_FINALIZADO => 'secondary',
         };
     }
 }

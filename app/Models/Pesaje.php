@@ -34,11 +34,6 @@ class Pesaje extends Model
         return $this->belongsTo(MedidaPeso::class);
     }
 
-    public function estado()
-    {
-        return $this->belongsTo(Estado::class);
-    }
-
     public function solicitud()
     {
         return $this->belongsTo(Pesaje::class)->where('estado_id', 1);
