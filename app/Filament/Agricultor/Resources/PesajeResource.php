@@ -82,6 +82,7 @@ class PesajeResource extends Resource
                 Tables\Columns\TextColumn::make('estado')
                     ->badge()
                     ->color(fn($state) => $state->getColor())
+                    ->tooltip(fn($record) => $record?->observaciones)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Creado')
@@ -119,7 +120,7 @@ class PesajeResource extends Resource
                         })
                         ->icon('heroicon-o-paper-airplane')
                         ->requiresConfirmation()
-                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::NUEVO),
+                        ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && ($record->estado == EstadoPesaje::NUEVO || $record->estado == EstadoPesaje::RECHAZADO)),
                 ])
             ])
             ->bulkActions([

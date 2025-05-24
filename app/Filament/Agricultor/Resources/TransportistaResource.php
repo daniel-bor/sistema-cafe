@@ -48,6 +48,10 @@ class TransportistaResource extends Resource
                     ->minDate(now()->addDays(1))
                     // ->native(false)
                     ->required(),
+                Forms\Components\TextInput::make('telefono')
+                    ->label('Teléfono')
+                    ->mask('9999-9999')
+                    ->required(),
                 Forms\Components\Select::make('agricultor_id')
                     ->relationship('agricultor', 'nombre')
                     ->getOptionLabelFromRecordUsing(fn($record) => $record->nombre_completo)
@@ -73,8 +77,7 @@ class TransportistaResource extends Resource
                     ])
                     ->imageEditorMode(2)
                     ->imageResizeMode('cover')
-                    ->imageCropAspectRatio('1:1')
-                    ->required(),
+                    ->imageCropAspectRatio('1:1'),
             ]);
     }
 

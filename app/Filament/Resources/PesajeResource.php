@@ -84,6 +84,9 @@ class PesajeResource extends Resource
                     ->badge()
                     ->color(fn($state) => $state->getColor())
                     ->sortable(),
+                // Observaciones
+                Tables\Columns\TextColumn::make('observaciones')
+                    ->label('Observaciones'),
                 Tables\Columns\TextColumn::make('cuenta.no_cuenta')
                     ->sortable()
                     ->visible(fn($record) => $record),
@@ -105,6 +108,17 @@ class PesajeResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                // Filtros para mostrar los pesajes por estado
+                // Por defecto se muestran pesajes con estado PENDIENTE
+                Tables\Filters\SelectFilter::make('estado')
+                    ->options([
+                        EstadoPesaje::ACEPTADO->value => EstadoPesaje::ACEPTADO->getLabel(),
+                        EstadoPesaje::PENDIENTE->value => EstadoPesaje::PENDIENTE->getLabel(),
+                        EstadoPesaje::RECHAZADO->value => EstadoPesaje::RECHAZADO->getLabel(),
+                        EstadoPesaje::PESAJE_INICIADO->value => EstadoPesaje::PESAJE_INICIADO->getLabel(),
+                        EstadoPesaje::PESAJE_FINALIZADO->value => EstadoPesaje::PESAJE_FINALIZADO->getLabel(),
+                    ])
+                    ->default(EstadoPesaje::PENDIENTE->value),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -154,8 +168,16 @@ class PesajeResource extends Resource
                     Tables\Actions\Action::make('Rechazar')
                         ->label('Rechazar Solicitud')
                         ->color('danger')
-                        ->action(function (Pesaje $record) {
+                        ->form([
+                            Forms\Components\Textarea::make('observaciones')
+                                ->label('Observaciones')
+                                ->placeholder('Escriba las observaciones para el agricultor')
+                                ->required()
+                                ->maxLength(255),
+                        ])
+                        ->action(function (Pesaje $record, array $data) {
                             $record->estado = EstadoPesaje::RECHAZADO;
+                            $record->observaciones = $data['observaciones'] ?? null;
                             $record->save();
                             Notification::make()
                                 ->title('Solicitud rechazada')
@@ -193,6 +215,7 @@ class PesajeResource extends Resource
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]);
+            ])
+            ->where('estado', '!=', EstadoPesaje::NUEVO);
     }
 }

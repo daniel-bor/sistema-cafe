@@ -8,6 +8,8 @@ use App\Filament\PesoCabal\Resources\ParcialidadResource\RelationManagers;
 use App\Models\Parcialidad;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Grouping\Group;
@@ -28,24 +30,144 @@ class ParcialidadResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('peso')
-                    ->minValue(1)
-                    ->numeric()
-                    ->required(),
-                Forms\Components\Select::make('transporte_id')
-                    ->relationship(
-                        'transporte',
-                        'placa',
-                        fn(Builder $query) => $query->where('disponible', true)
-                    )
-                    ->native(false)
-                    ->required(),
-                Forms\Components\Select::make('transportista_id')
-                    ->relationship('transportista', 'nombre_completo')
-                    ->native(false)
-                    ->required(),
+                // Forms\Components\TextInput::make('peso')
+                //     ->minValue(1)
+                //     ->numeric()
+                //     ->required(),
+                // Forms\Components\Select::make('transporte_id')
+                //     ->relationship(
+                //         'transporte',
+                //         'placa',
+                //         fn(Builder $query) => $query->where('disponible', true)
+                //     )
+                //     ->native(false)
+                //     ->required(),
+                // Forms\Components\Select::make('transportista_id')
+                //     ->relationship('transportista', 'nombre_completo')
+                //     ->native(false)
+                //     ->required(),
             ]);
     }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Información de la Parcialidad')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('id')
+                            ->label('ID')
+                            ->badge(),
+                        Infolists\Components\TextEntry::make('peso')
+                            ->label('Peso Esperado')
+                            ->suffix(fn($record) => ' ' . $record->pesaje->medidaPeso->nombre),
+                        Infolists\Components\TextEntry::make('peso_bascula')
+                            ->label('Peso en Báscula')
+                            ->suffix(fn($record) => ' ' . $record->pesaje->medidaPeso->nombre)
+                            ->placeholder('No pesado'),
+                        Infolists\Components\TextEntry::make('estado')
+                            ->label('Estado')
+                            ->badge()
+                            ->color(fn($state) => $state->getColor()),
+                        Infolists\Components\TextEntry::make('fecha_envio')
+                            ->label('Fecha de Envío')
+                            ->dateTime('d/m/Y H:i')
+                            ->placeholder('No enviado'),
+                        Infolists\Components\TextEntry::make('fecha_recepcion')
+                            ->label('Fecha de Recepción')
+                            ->dateTime('d/m/Y H:i')
+                            ->placeholder('No recibido'),
+                        Infolists\Components\TextEntry::make('created_at')
+                            ->label('Fecha de Creación')
+                            ->dateTime('d/m/Y H:i'),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Información del Pesaje')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('pesaje.id')
+                            ->label('ID del Pesaje')
+                            ->badge(),
+                        Infolists\Components\TextEntry::make('pesaje.cuenta.no_cuenta')
+                            ->label('Número de Cuenta')
+                            ->badge()
+                            ->color('info'),
+                        Infolists\Components\TextEntry::make('pesaje.cantidad_total')
+                            ->label('Cantidad Total')
+                            ->numeric(2, '.', ',')
+                            ->suffix(fn($record) => ' ' . $record->pesaje->medidaPeso->nombre),
+                        Infolists\Components\TextEntry::make('pesaje.medidaPeso.nombre')
+                            ->label('Unidad de Medida')
+                            ->badge()
+                            ->color('warning'),
+                        Infolists\Components\TextEntry::make('pesaje.estado')
+                            ->label('Estado del Pesaje')
+                            ->badge()
+                            ->color(fn($state) => $state->getColor()),
+                        Infolists\Components\TextEntry::make('pesaje.observaciones')
+                            ->label('Observaciones')
+                            ->placeholder('Sin observaciones')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Información del Transporte')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('transporte.placa')
+                            ->label('Placa del Vehículo')
+                            ->badge()
+                            ->color('success'),
+                        Infolists\Components\TextEntry::make('transporte.marca')
+                            ->label('Marca'),
+                        // Infolists\Components\TextEntry::make('transporte.modelo')
+                        //     ->label('Modelo'),
+                        // Infolists\Components\TextEntry::make('transporte.capacidad_carga')
+                        //     ->label('Capacidad de Carga')
+                        //     ->numeric(2, '.', ',')
+                        //     ->suffix(' kg'),
+                    ])
+                    ->columns(2),
+
+                Infolists\Components\Section::make('Información del Transportista')
+                    ->schema([
+                        Infolists\Components\ImageEntry::make('transportista.foto')
+                            ->label('Foto')
+                            ->circular()
+                            ->size(100)
+                            ->defaultImageUrl(url('/images/default-avatar.png')),
+                        Infolists\Components\TextEntry::make('transportista.nombre_completo')
+                            ->label('Nombre Completo')
+                            ->weight('bold')
+                            ->size('lg'),
+                        Infolists\Components\TextEntry::make('transportista.cui')
+                            ->label('Cédula')
+                            ->badge(),
+                        Infolists\Components\TextEntry::make('transportista.telefono')
+                            ->label('Teléfono')
+                            ->icon('heroicon-o-phone'),
+                        // Infolists\Components\TextEntry::make('transportista.email')
+                        //     ->label('Email')
+                        //     ->icon('heroicon-o-envelope')
+                        //     ->copyable(),
+                        Infolists\Components\TextEntry::make('transportista.tipo_licencia_label')
+                            ->label('Tipo Licencia')
+                            ->badge()
+                            ->color('info'),
+                        // Infolists\Components\IconEntry::make('transportista.disponible')
+                        //     ->label('Disponible')
+                        //     ->boolean()
+                        //     ->trueIcon('heroicon-o-check-circle')
+                        //     ->falseIcon('heroicon-o-x-circle')
+                        //     ->trueColor('success')
+                        //     ->falseColor('danger'),
+                    ])
+                    ->columns(2),
+            ]);
+    }
+
+    // Crea un infolist con los datos de la parcialidad, pesaje, tranporte y transportista asociados
+    // Infolist:
+
 
     public static function table(Table $table): Table
     {
@@ -63,6 +185,12 @@ class ParcialidadResource extends Resource
                 Tables\Columns\TextColumn::make('pesaje.medidaPeso.nombre')
                     ->label('Unidad de Medida')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('peso_bascula')
+                    ->label('Peso en Báscula')
+                    ->sortable()
+                    ->placeholder('No pesado')
+                    ->badge()
+                    ->color('warning'),
                 Tables\Columns\TextColumn::make('fecha_envio')
                     ->dateTime('d/m/Y H:i')
                     ->label('Fecha de Envio'),
@@ -108,8 +236,11 @@ class ParcialidadResource extends Resource
                         ->action(function (Parcialidad $record) {
                             $record->update([
                                 'estado' => EstadoParcialidad::RECIBIDO,
+                                'fecha_recepcion' => now(),
                             ]);
-                        }),
+                        })
+                        ->requiresConfirmation()
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::ENVIADO),
                     Tables\Actions\Action::make('rechazar')
                         ->label('Rechazar')
                         ->icon('heroicon-o-x-mark')
@@ -118,7 +249,9 @@ class ParcialidadResource extends Resource
                             $record->update([
                                 'estado' => EstadoParcialidad::RECHAZADO,
                             ]);
-                        }),
+                        })
+                        ->requiresConfirmation()
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::ENVIADO),
                     Tables\Actions\Action::make('pesar')
                         ->label('Pesar')
                         ->icon('heroicon-o-scale')
@@ -134,10 +267,15 @@ class ParcialidadResource extends Resource
                         ])
                         ->action(function (Parcialidad $record, array $data) {
                             $record->update([
-                                'peso' => $data['peso_bascula'],
+                                'peso_bascula' => $data['peso_bascula'],
                                 'estado' => EstadoParcialidad::PESADO,
                             ]);
-                        }),
+                            // Actualizar el estado del pesaje relacionado
+                            $record->pesaje->update([
+                                'estado' => \App\Enums\EstadoPesaje::PESAJE_INICIADO,
+                            ]);
+                        })
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::RECIBIDO),
                     Tables\Actions\Action::make('finalizar')
                         ->label('Finalizar')
                         ->icon('heroicon-o-check-circle')
@@ -146,7 +284,11 @@ class ParcialidadResource extends Resource
                             $record->update([
                                 'estado' => EstadoParcialidad::FINALIZADO,
                             ]);
-                        }),
+                            // Actualizar estado del transporte y transportista a disponible
+                            $record->transporte->update(['disponible' => true]);
+                            $record->transportista->update(['disponible' => true]);
+                        })
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::PESADO),
                 ])
             ])
             ->bulkActions([

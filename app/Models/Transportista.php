@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Transportista extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['cui', 'nombre_completo', 'fecha_nacimiento', 'tipo_licencia', 'fecha_vencimiento_licencia', 'agricultor_id', 'estado_id', 'disponible', 'foto'];
+    protected $fillable = ['cui', 'nombre_completo', 'fecha_nacimiento', 'tipo_licencia', 'fecha_vencimiento_licencia', 'agricultor_id', 'estado_id', 'disponible', 'foto', 'telefono'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [

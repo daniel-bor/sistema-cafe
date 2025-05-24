@@ -2,14 +2,15 @@
 
 namespace App\Filament\Agricultor\Resources\PesajeResource\RelationManagers;
 
-use App\Enums\EstadoParcialidad;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\EstadoPesaje;
 use App\Models\Parcialidad;
-use Filament\Notifications\Notification;
+use App\Enums\EstadoParcialidad;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\CreateAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -110,8 +111,10 @@ class ParcialidadesRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::PENDIENTE || $record->estado == EstadoParcialidad::RECHAZADO),
+                    Tables\Actions\DeleteAction::make()
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::PENDIENTE || $record->estado == EstadoParcialidad::RECHAZADO),
                     // Tables\Actions\Action::make('verQR')
                     //     ->label('Ver QR')
                     //     ->url(fn(Model $record) => route('filament.resources.pesajes.pesaje.qr', $record->id))
@@ -149,7 +152,8 @@ class ParcialidadesRelationManager extends RelationManager
                                 ->body('Parcialidad enviada correctamente.')
                                 ->success()
                                 ->send();
-                        }),
+                        })
+                        ->visible(fn($record) => ($record->pesaje->estado == EstadoPesaje::ACEPTADO || $record->pesaje->estado == EstadoPesaje::PESAJE_INICIADO) && $record->estado == EstadoParcialidad::PENDIENTE),
                 ])
             ])
             ->bulkActions([
