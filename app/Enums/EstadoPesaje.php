@@ -12,6 +12,8 @@ enum EstadoPesaje: int implements HasLabel
     case RECHAZADO = 3;
     case PESAJE_INICIADO = 4;
     case PESAJE_FINALIZADO = 5;
+    case CUENTA_ABIERTA = 6; // Estado adicional para indicar que la cuenta está abierta
+    case CUENTA_CERRADA = 7; // Estado adicional para indicar que la cuenta está cerrada
 
     /**
      * Obtener todas las opciones como array para selects y forms
@@ -28,6 +30,8 @@ enum EstadoPesaje: int implements HasLabel
             self::RECHAZADO => 'Rechazado',
             self::PESAJE_INICIADO => 'Pesaje Iniciado',
             self::PESAJE_FINALIZADO => 'Pesaje Finalizado',
+            self::CUENTA_ABIERTA => 'Cuenta Abierta',
+            self::CUENTA_CERRADA => 'Cuenta Cerrada',
         };
     }
 
@@ -40,6 +44,8 @@ enum EstadoPesaje: int implements HasLabel
             self::RECHAZADO => 'danger',
             self::PESAJE_INICIADO => 'primary',
             self::PESAJE_FINALIZADO => 'secondary',
+            self::CUENTA_ABIERTA => 'blue',
+            self::CUENTA_CERRADA => 'success',
         };
     }
 }

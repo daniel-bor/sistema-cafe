@@ -37,6 +37,7 @@ class PesoCabalPanelProvider extends PanelProvider
             ->widgets([])
             ->authMiddleware([
                 Authenticate::class,
+                'filament.panel.access:pesoCabal',
             ])
             ->middleware([
                 EncryptCookies::class,

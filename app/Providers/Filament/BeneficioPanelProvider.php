@@ -38,6 +38,7 @@ class BeneficioPanelProvider extends PanelProvider
             ->widgets([])
             ->authMiddleware([
                 Authenticate::class,
+                'filament.panel.access:beneficio',
             ])
             ->middleware([
                 EncryptCookies::class,

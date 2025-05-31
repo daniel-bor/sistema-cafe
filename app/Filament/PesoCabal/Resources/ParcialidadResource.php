@@ -248,6 +248,9 @@ class ParcialidadResource extends Resource
                             // Si ninguna otra parcialidad ha sido pesada, actualizar estado del pesaje
                             if (!$hasOtherWeighedParcialidades) {
                                 $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::CUENTA_ABIERTA]);
+                                $record->pesaje->update([
+                                    'estado' => \App\Enums\EstadoPesaje::CUENTA_ABIERTA,
+                                ]);
                             }
                         })
                         ->requiresConfirmation()
@@ -301,6 +304,9 @@ class ParcialidadResource extends Resource
                             // If all pesajes have been initiated, close the account
                             if ($allPesajesInitiated) {
                                 $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CERRADA]);
+                                $record->pesaje->update([
+                                    'estado' => \App\Enums\EstadoPesaje::CUENTA_CERRADA,
+                                ]);
                             }
                         })
                         ->visible(fn($record) => $record->estado == EstadoParcialidad::RECIBIDO),
