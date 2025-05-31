@@ -65,7 +65,7 @@ class Pesaje extends Model
     public function getCantidadEntregasAttribute()
     {
         return $this->parcialidades()
-            ->where('estado', EstadoParcialidad::PESADO)
+            ->where('estado', EstadoParcialidad::FINALIZADO)
             ->count();
     }
 
@@ -79,7 +79,7 @@ class Pesaje extends Model
     public function getFechaUltimoEnvioAttribute()
     {
         return $this->parcialidades()
-            ->where('estado', EstadoParcialidad::PESADO)
+            ->where('estado', EstadoParcialidad::FINALIZADO)
             ->orderBy('fecha_envio', 'desc')
             ->first()?->fecha_envio ?? null;
     }
