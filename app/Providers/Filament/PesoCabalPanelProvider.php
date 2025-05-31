@@ -34,8 +34,10 @@ class PesoCabalPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/PesoCabal/Widgets'), for: 'App\\Filament\\PesoCabal\\Widgets')
-            ->widgets([
-
+            ->widgets([])
+            ->authMiddleware([
+                Authenticate::class,
+                'filament.panel.access:pesoCabal',
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -47,15 +49,11 @@ class PesoCabalPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
+                // \App\Http\Middleware\SetPostgresSchema::class,
             ])
             ->spa()
             ->passwordReset()
             ->unsavedChangesAlerts()
-            ->sidebarCollapsibleOnDesktop()
-            ->databaseNotifications()
-            ->databaseNotificationsPolling(null);
+            ->sidebarCollapsibleOnDesktop();
     }
 }

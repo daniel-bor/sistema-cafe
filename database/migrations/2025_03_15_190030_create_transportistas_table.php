@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('nombre_completo', 100);
             $table->date('fecha_nacimiento');
             $table->string('tipo_licencia', 20);
+            // Telefono
+            $table->string('telefono', 20)->nullable();
             $table->date('fecha_vencimiento_licencia');
             $table->foreignId('agricultor_id')->constrained('agricultores');
             $table->foreignId('estado_id')->constrained('estados');

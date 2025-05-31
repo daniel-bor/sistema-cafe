@@ -37,6 +37,10 @@ class AgricultorPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Agricultor/Widgets'), for: 'App\\Filament\\Agricultor\\Widgets')
             ->widgets([])
+            ->authMiddleware([
+                Authenticate::class,
+                'filament.panel.access:agricultor',
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -47,15 +51,11 @@ class AgricultorPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
+                \App\Http\Middleware\SetPostgresSchema::class,
             ])
             ->spa()
             ->sidebarCollapsibleOnDesktop()
             ->profile(isSimple: false)
-            ->databaseNotifications()
-            ->databaseNotificationsPolling(null)
             ->unsavedChangesAlerts();
     }
 }

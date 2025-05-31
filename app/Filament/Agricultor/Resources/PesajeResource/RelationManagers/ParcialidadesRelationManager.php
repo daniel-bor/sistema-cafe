@@ -2,14 +2,16 @@
 
 namespace App\Filament\Agricultor\Resources\PesajeResource\RelationManagers;
 
-use App\Enums\EstadoParcialidad;
+use App\Enums\EstadoGenericoEnum;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\EstadoPesaje;
 use App\Models\Parcialidad;
-use Filament\Notifications\Notification;
+use App\Enums\EstadoParcialidad;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\CreateAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -33,12 +35,12 @@ class ParcialidadesRelationManager extends RelationManager
                     ->relationship(
                         'transporte',
                         'placa',
-                        fn(Builder $query) => $query->where('disponible', true)
+                        fn(Builder $query) => $query->where('estado', EstadoGenericoEnum::APROBADO)
                     )
                     ->native(false)
                     ->required(),
                 Forms\Components\Select::make('transportista_id')
-                    ->relationship('transportista', 'nombre_completo')
+                    ->relationship('transportista', 'nombre_completo', fn(Builder $query) => $query->where('estado', EstadoGenericoEnum::APROBADO))
                     ->native(false)
                     ->required(),
             ]);
@@ -88,6 +90,7 @@ class ParcialidadesRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->createAnother(false)
+                    ->visible(fn() => $this->ownerRecord->estado == EstadoPesaje::NUEVO || $this->ownerRecord->estado == EstadoPesaje::RECHAZADO)
                     // ->beforeFormValidated(), //Validar que la suma de pesos de parcialidades no sea mayor al peso total del pesaje
                     ->mutateFormDataUsing(function (array $data, CreateAction $action): array {
                         // Convertir el peso total a float
@@ -110,8 +113,10 @@ class ParcialidadesRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn($record) => ($record->estado == EstadoParcialidad::PENDIENTE || $record->estado == EstadoParcialidad::RECHAZADO) && $record->pesaje->estado == EstadoPesaje::NUEVO && $record->pesaje->estado == EstadoPesaje::RECHAZADO && $record->pesaje->estado == EstadoPesaje::PENDIENTE),
+                    Tables\Actions\DeleteAction::make()
+                        ->visible(fn($record) => ($record->estado == EstadoParcialidad::PENDIENTE || $record->estado == EstadoParcialidad::RECHAZADO) && $record->pesaje->estado == EstadoPesaje::NUEVO && $record->pesaje->estado == EstadoPesaje::RECHAZADO && $record->pesaje->estado == EstadoPesaje::PENDIENTE),
                     // Tables\Actions\Action::make('verQR')
                     //     ->label('Ver QR')
                     //     ->url(fn(Model $record) => route('filament.resources.pesajes.pesaje.qr', $record->id))
@@ -149,7 +154,8 @@ class ParcialidadesRelationManager extends RelationManager
                                 ->body('Parcialidad enviada correctamente.')
                                 ->success()
                                 ->send();
-                        }),
+                        })
+                        ->visible(fn($record) => ($record->pesaje->estado == EstadoPesaje::ACEPTADO || $record->pesaje->estado == EstadoPesaje::PESAJE_INICIADO) && $record->estado == EstadoParcialidad::PENDIENTE),
                 ])
             ])
             ->bulkActions([

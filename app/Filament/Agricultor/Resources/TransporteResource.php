@@ -2,16 +2,18 @@
 
 namespace App\Filament\Agricultor\Resources;
 
-use App\Filament\Agricultor\Resources\TransporteResource\Pages;
-use App\Filament\Agricultor\Resources\TransporteResource\RelationManagers;
-use App\Models\Transporte;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Forms\Form;
+use App\Models\Transporte;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Agricultor\Resources\TransporteResource\Pages;
+use App\Filament\Agricultor\Resources\TransporteResource\RelationManagers;
 
 class TransporteResource extends Resource
 {
@@ -21,11 +23,22 @@ class TransporteResource extends Resource
 
     public static function form(Form $form): Form
     {
+        try {
+            $testCount = DB::table('transportes')->count(); // Eloquent/Query Builder
+            Log::debug("[Test Query] Conteo de transportes (Query Builder): " . $testCount);
+
+            $testRaw = DB::select('SELECT COUNT(*) FROM transportes');
+            Log::debug("[Test Query] Conteo de transportes (Raw): " . $testRaw[0]->count);
+        } catch (\Exception $e) {
+            Log::error("[Test Query] FALLO al consultar transportes: " . $e->getMessage());
+        }
+
         return $form
             ->schema([
                 Forms\Components\TextInput::make('placa')
                     ->maxLength(7)
                     ->minLength(3)
+                    ->unique()
                     ->required(),
                 Forms\Components\TextInput::make('marca')
                     ->maxLength(50)
@@ -62,8 +75,9 @@ class TransporteResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('color')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('estado.nombre')
+                Tables\Columns\TextColumn::make('estado')
                     ->badge()
+                    ->color(fn($state) => $state->getColor())
                     ->sortable(),
                 Tables\Columns\IconColumn::make('disponible')
                     ->boolean(),

@@ -36,6 +36,10 @@ class BeneficioPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([])
+            ->authMiddleware([
+                Authenticate::class,
+                'filament.panel.access:beneficio',
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -46,9 +50,7 @@ class BeneficioPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
+                \App\Http\Middleware\SetPostgresSchema::class,
             ])
             ->unsavedChangesAlerts()
             ->spa()
