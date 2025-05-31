@@ -2,6 +2,7 @@
 
 namespace App\Filament\Agricultor\Resources\PesajeResource\RelationManagers;
 
+use App\Enums\EstadoGenericoEnum;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
@@ -34,12 +35,12 @@ class ParcialidadesRelationManager extends RelationManager
                     ->relationship(
                         'transporte',
                         'placa',
-                        fn(Builder $query) => $query->where('disponible', true)
+                        fn(Builder $query) => $query->where('estado', EstadoGenericoEnum::APROBADO)
                     )
                     ->native(false)
                     ->required(),
                 Forms\Components\Select::make('transportista_id')
-                    ->relationship('transportista', 'nombre_completo')
+                    ->relationship('transportista', 'nombre_completo', fn(Builder $query) => $query->where('estado', EstadoGenericoEnum::APROBADO))
                     ->native(false)
                     ->required(),
             ]);

@@ -75,4 +75,16 @@ class Pesaje extends Model
             ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
             ->sum('peso');
     }
+
+
+    // Al crear un registro establecer el estado como nuevo
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($pesaje) {
+            // Asignar el estado como pendiente
+            $pesaje->estado = EstadoPesaje::NUEVO;
+        });
+    }
 }

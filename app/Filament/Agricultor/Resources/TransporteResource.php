@@ -38,6 +38,7 @@ class TransporteResource extends Resource
                 Forms\Components\TextInput::make('placa')
                     ->maxLength(7)
                     ->minLength(3)
+                    ->unique()
                     ->required(),
                 Forms\Components\TextInput::make('marca')
                     ->maxLength(50)
@@ -74,8 +75,9 @@ class TransporteResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('color')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('estado.nombre')
+                Tables\Columns\TextColumn::make('estado')
                     ->badge()
+                    ->color(fn($state) => $state->getColor())
                     ->sortable(),
                 Tables\Columns\IconColumn::make('disponible')
                     ->boolean(),

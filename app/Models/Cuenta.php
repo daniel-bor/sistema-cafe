@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoCuentaEnum;
 use Illuminate\Database\Eloquent\Model;
 
 class Cuenta extends Model
@@ -17,5 +18,15 @@ class Cuenta extends Model
     public function pesajes()
     {
         return $this->hasMany(Pesaje::class);
+    }
+
+    // Inicializar el estado de la cuenta con boot implementando su enum estado CREADO
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($cuenta) {
+            $cuenta->estado = EstadoCuentaEnum::CUENTA_CREADA;
+        });
     }
 }

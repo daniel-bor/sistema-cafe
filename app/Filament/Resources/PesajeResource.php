@@ -52,6 +52,9 @@ class PesajeResource extends Resource
                 Tables\Columns\TextColumn::make('cuenta.no_cuenta')
                     ->sortable()
                     ->label('No. Cuenta'),
+                // Agricultor
+                Tables\Columns\TextColumn::make('agricultor.nombreCompleto')
+                    ->label('Agricultor'),
                 Tables\Columns\TextColumn::make('cantidad_total')
                     ->numeric('2', '.', ',')
                     ->sortable(),
@@ -144,14 +147,6 @@ class PesajeResource extends Resource
                                         ->body('La solicitud de pesaje se actualizó correctamente y se ha gestionado la cuenta.')
                                         ->success()
                                         ->send();
-
-                                    // Verificar implementacion porque no llego
-                                    // Notificar al agricultor
-                                    $recipient = $record->agricultor->user;
-                                    Notification::make()
-                                        ->title('Nueva información')
-                                        ->body('Hay cambios en el estado de un pesaje.')
-                                        ->sendToDatabase($recipient);
                                 } catch (\Exception $e) {
                                     // Capturar errores y mostrar una notificación
                                     Notification::make()

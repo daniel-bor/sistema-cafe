@@ -32,4 +32,15 @@ class Parcialidad extends Model
     {
         return $this->belongsTo(Transportista::class);
     }
+
+    // Inicializar el estado como PENDIENTE al crear un registro
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($parcialidad) {
+            // Asignar el estado PENDIENTE al crear un nuevo registro
+            $parcialidad->estado = EstadoParcialidad::PENDIENTE;
+        });
+    }
 }
