@@ -76,6 +76,32 @@ class Pesaje extends Model
             ->sum('peso');
     }
 
+    public function getFechaUltimoEnvioAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', EstadoParcialidad::PESADO)
+            ->orderBy('fecha_envio', 'desc')
+            ->first()?->fecha_envio ?? null;
+    }
+
+    public function getNoCuentaAttribute()
+    {
+        return $this->cuenta?->no_cuenta ?? 'No asignada';
+    }
+
+    // Obtener el porcentaje de diferencia entre el peso total y la suma de las parcialidades recibidas
+    public function getPorcentajeDiferenciaAttribute()
+    {
+        $pesoTotal = $this->cantidad_total;
+        $pesoParcialidades = $this->parcialidades()->sum('peso_bascula');
+
+        if ($pesoTotal == 0) {
+            return 0; // Evitar división por cero
+        }
+
+        return (($pesoTotal - $pesoParcialidades) / $pesoTotal) * 100;
+    }
+
 
     // Al crear un registro establecer el estado como nuevo
     protected static function boot()

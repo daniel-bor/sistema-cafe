@@ -4,11 +4,18 @@ namespace App\Models;
 
 use App\Enums\EstadoCuentaEnum;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cuenta extends Model
 {
     protected $fillable = ['no_cuenta', 'estado', 'agricultor_id'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
+    // soft delete
+    use SoftDeletes;
+
+    protected $casts = [
+        'estado' => EstadoCuentaEnum::class,
+    ];
 
     public function agricultor()
     {

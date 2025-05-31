@@ -48,7 +48,7 @@ class PesoCabalPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\SetPostgresSchema::class,
+                // \App\Http\Middleware\SetPostgresSchema::class,
             ])
             ->spa()
             ->passwordReset()

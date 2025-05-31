@@ -22,7 +22,13 @@ class PesajeResource extends Resource
 {
     protected static ?string $model = Pesaje::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+    // Cambiar el nombre de la pestaña en la barra de navegación
+    protected static ?string $navigationLabel = 'Cuentas';
+    // Cambiar el nombre del recurso en la barra de navegación
+    protected static ?string $pluralLabel = 'Cuentas';
+    // Cambiar el nombre del recurso en la barra de navegación
+    protected static ?string $singularLabel = 'Cuenta';
 
     public static function form(Form $form): Form
     {
@@ -45,27 +51,21 @@ class PesajeResource extends Resource
         return $table
             ->columns([
                 // Mostrando el ID
-                Tables\Columns\TextColumn::make('id')
-                    ->sortable()
-                    ->label('ID'),
+                // Tables\Columns\TextColumn::make('id')
+                //     ->sortable()
+                //     ->label('ID'),
                 // Numero de cuenta
-                Tables\Columns\TextColumn::make('cuenta.no_cuenta')
-                    ->sortable()
+                Tables\Columns\TextColumn::make('no_cuenta')
                     ->label('No. Cuenta'),
                 // Agricultor
                 Tables\Columns\TextColumn::make('agricultor.nombreCompleto')
                     ->label('Agricultor'),
                 Tables\Columns\TextColumn::make('cantidad_total')
+                    ->label('Cantidad Esperada')
                     ->numeric('2', '.', ',')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('medidaPeso.nombre')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tolerancia')
-                    ->suffix('%')
-                    ->numeric()
-                    ->sortable()
-                    // Solo usuarios con rol_id 2 pueden ver esta columna
-                    ->visible(fn($record) => auth()->user()->rol_id === 2),
                 // Tables\Columns\TextColumn::make('precio_unitario')
                 //     ->money('GTQ')
                 //     ->sortable(),
@@ -75,6 +75,17 @@ class PesajeResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('cantidad_entregas')
                     ->label('Entregas')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('fecha_ultimo_envio')
+                    ->label('Fecha del último envío')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('porcentaje_diferencia')
+                    ->label('Diferencia')
+                    ->suffix('%'),
+                Tables\Columns\TextColumn::make('tolerancia')
+                    ->suffix('%')
                     ->numeric()
                     ->sortable(),
                 // Tables\Columns\TextColumn::make('fecha_inicio')
@@ -120,8 +131,7 @@ class PesajeResource extends Resource
                         EstadoPesaje::RECHAZADO->value => EstadoPesaje::RECHAZADO->getLabel(),
                         EstadoPesaje::PESAJE_INICIADO->value => EstadoPesaje::PESAJE_INICIADO->getLabel(),
                         EstadoPesaje::PESAJE_FINALIZADO->value => EstadoPesaje::PESAJE_FINALIZADO->getLabel(),
-                    ])
-                    ->default(EstadoPesaje::PENDIENTE->value),
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
