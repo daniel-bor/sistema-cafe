@@ -264,10 +264,16 @@ class ParcialidadResource extends Resource
                                 ->maxValue(1000000)
                                 ->numeric()
                                 ->required(),
+                            // Observaciones opcionales
+                            Forms\Components\Textarea::make('observaciones')
+                                ->label('Observaciones')
+                                ->placeholder('Ingrese observaciones si es necesario')
+                                ->maxLength(255),
                         ])
                         ->action(function (Parcialidad $record, array $data) {
                             $record->update([
                                 'peso_bascula' => $data['peso_bascula'],
+                                'observaciones' => $data['observaciones'] ?? null,
                                 'estado' => EstadoParcialidad::PESADO,
                             ]);
                             // Actualizar el estado del pesaje relacionado

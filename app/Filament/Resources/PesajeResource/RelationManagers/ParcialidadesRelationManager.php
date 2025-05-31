@@ -94,8 +94,12 @@ class ParcialidadesRelationManager extends RelationManager
                                 Infolists\Components\ViewEntry::make('codigo_qr')
                                     ->label('Código Escaneable')
                                     ->view('filament.components.qr-code')
-                                    ->state(fn($record) => route('parcialidad.qr', ['id' => $record->id]))
-                                    ->extraAttributes(['size' => 120]),
+                                    ->state(function ($record) {
+                                        return [
+                                            'value' => route('parcialidad.qr', ['id' => $record->id]),
+                                            'size' => 120
+                                        ];
+                                    }),
                             ]),
                     ])
                     ->collapsible()

@@ -10,12 +10,13 @@ class Parcialidad extends Model
 {
     use SoftDeletes;
     protected $table = 'parcialidades';
-    protected $fillable = ['pesaje_id', 'transporte_id', 'transportista_id', 'peso', 'peso_bascula', 'fecha_recepcion', 'fecha_envio','estado', 'codigo_qr'];
+    protected $fillable = ['pesaje_id', 'transporte_id', 'transportista_id', 'peso', 'peso_bascula', 'fecha_recepcion', 'fecha_envio','estado', 'codigo_qr', 'observaciones'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [
         'estado' => EstadoParcialidad::class,
-        'fecha_recepcion' => 'datetime'
+        'fecha_recepcion' => 'datetime',
+        'fecha_envio' => 'datetime'
     ];
 
     public function pesaje()
