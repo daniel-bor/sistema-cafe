@@ -2,13 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\Agricultor;
 use App\Models\Rol;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Estado;
+use App\Models\Agricultor;
 use App\Models\MedidaPeso;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
+
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            // Un search_path amplio para los seeders, ya que pueden tocar múltiples esquemas
+            DB::statement("SET search_path TO agricultor_context, beneficio_context, peso_cabal_context, shared, public");
+        }
 
         Rol::create(
             [
