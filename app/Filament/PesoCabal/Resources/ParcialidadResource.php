@@ -318,6 +318,54 @@ class ParcialidadResource extends Resource
 
                             // Validar si es la ultima parcialidad del pesaje y validar que porcentaje_diferencia sea < a la tolerancia del pesaje
                             // Si todo es correcto, actualizar el estado del pesaje y la cuenta a CUENTA_CONFIRMADA
+
+                            // Obtener el pesaje relacionado
+                            $pesaje = $record->pesaje;
+
+                            // Verificar si todas las parcialidades del pesaje están finalizadas
+                            $totalParcialidades = $pesaje->parcialidades()
+                                ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
+                                ->count();
+
+                            $parcialidadesFinalizadas = $pesaje->parcialidades()
+                                ->where('estado', EstadoParcialidad::FINALIZADO)
+                                ->count();
+
+                            // Si es la última parcialidad en finalizar
+                            if ($totalParcialidades === $parcialidadesFinalizadas) {
+                                // Calcular el porcentaje de diferencia
+                                $porcentajeDiferencia = abs($pesaje->porcentaje_diferencia);
+                                $tolerancia = $pesaje->tolerancia ?? 0;
+
+                                // Verificar si la diferencia está dentro de la tolerancia
+                                if ($porcentajeDiferencia <= $tolerancia) {
+                                    // Actualizar estado del pesaje a PESAJE_FINALIZADO
+                                    $pesaje->update([
+                                        'estado' => \App\Enums\EstadoPesaje::PESAJE_FINALIZADO,
+                                    ]);
+
+                                    // Actualizar estado de la cuenta a CUENTA_CONFIRMADA
+                                    if ($pesaje->cuenta) {
+                                        $pesaje->cuenta->update([
+                                            'estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CONFIRMADA
+                                        ]);
+                                    }
+
+                                    // Notificar éxito
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Pesaje completado exitosamente')
+                                        ->body("El pesaje se ha finalizado. Diferencia: {$porcentajeDiferencia}% (Tolerancia: {$tolerancia}%)")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    // Notificar que excede la tolerancia
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Tolerancia excedida')
+                                        ->body("La diferencia de peso ({$porcentajeDiferencia}%) excede la tolerancia permitida ({$tolerancia}%)")
+                                        ->warning()
+                                        ->send();
+                                }
+                            }
                         })
                         ->visible(fn($record) => $record->estado == EstadoParcialidad::PESADO),
                     Tables\Actions\Action::make('generar_boleta')

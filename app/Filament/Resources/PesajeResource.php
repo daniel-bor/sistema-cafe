@@ -193,6 +193,89 @@ class PesajeResource extends Resource
                         ->icon('heroicon-o-x-circle')
                         ->requiresConfirmation()
                         ->visible(fn($record) => $record->cantidad_total == $record->total_parcialidades && $record->estado == EstadoPesaje::PENDIENTE),
+                    Tables\Actions\Action::make('cerrar_cuenta')
+                        ->label('Cerrar Cuenta')
+                        ->color('primary')
+                        ->icon('heroicon-o-lock-closed')
+                        ->action(function (Pesaje $record) {
+                            DB::transaction(function () use ($record) {
+                                try {
+                                    // Verificar que todas las parcialidades estén finalizadas
+                                    $totalParcialidades = $record->parcialidades()
+                                        ->where('estado', '!=', \App\Enums\EstadoParcialidad::RECHAZADO)
+                                        ->count();
+
+                                    $parcialidadesFinalizadas = $record->parcialidades()
+                                        ->where('estado', \App\Enums\EstadoParcialidad::FINALIZADO)
+                                        ->count();
+
+                                    if ($totalParcialidades !== $parcialidadesFinalizadas) {
+                                        Notification::make()
+                                            ->title('No se puede cerrar la cuenta')
+                                            ->body('Todas las parcialidades deben estar finalizadas antes de cerrar la cuenta.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    // Calcular el porcentaje de diferencia
+                                    $porcentajeDiferencia = abs($record->porcentaje_diferencia);
+                                    $tolerancia = $record->tolerancia ?? 0;
+
+                                    // Verificar si la diferencia está dentro de la tolerancia
+                                    if ($porcentajeDiferencia <= $tolerancia) {
+                                        // Actualizar estado del pesaje a PESAJE_FINALIZADO
+                                        $record->update([
+                                            'estado' => EstadoPesaje::PESAJE_FINALIZADO,
+                                        ]);
+
+                                        // Actualizar estado de la cuenta a CUENTA_CONFIRMADA
+                                        if ($record->cuenta) {
+                                            $record->cuenta->update([
+                                                'estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CONFIRMADA
+                                            ]);
+                                        }
+
+                                        Notification::make()
+                                            ->title('Cuenta cerrada exitosamente')
+                                            ->body("La cuenta se ha cerrado correctamente. Diferencia: {$porcentajeDiferencia}% (Tolerancia: {$tolerancia}%)")
+                                            ->success()
+                                            ->send();
+                                    } else {
+                                        Notification::make()
+                                            ->title('No se puede cerrar la cuenta')
+                                            ->body("La diferencia de peso ({$porcentajeDiferencia}%) excede la tolerancia permitida ({$tolerancia}%). Revise las parcialidades.")
+                                            ->danger()
+                                            ->send();
+                                    }
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->title('Error al cerrar la cuenta')
+                                        ->body('No se pudo completar la operación: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            });
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Confirmar cierre de cuenta')
+                        ->modalDescription('¿Está seguro de que desea cerrar esta cuenta? Esta acción validará que todas las parcialidades estén finalizadas y que la diferencia de peso esté dentro de la tolerancia.')
+                        ->modalSubmitActionLabel('Cerrar Cuenta')
+                        ->visible(function ($record) {
+                            // Verificar que todas las parcialidades estén finalizadas
+                            $totalParcialidades = $record->parcialidades()
+                                ->where('estado', '!=', \App\Enums\EstadoParcialidad::RECHAZADO)
+                                ->count();
+
+                            $parcialidadesFinalizadas = $record->parcialidades()
+                                ->where('estado', \App\Enums\EstadoParcialidad::FINALIZADO)
+                                ->count();
+
+                            // Solo mostrar si todas las parcialidades están finalizadas y el pesaje está iniciado
+                            return $totalParcialidades === $parcialidadesFinalizadas &&
+                                   $totalParcialidades > 0 &&
+                                   $record->estado == EstadoPesaje::PESAJE_INICIADO;
+                        }),
                 ])
             ])
             ->bulkActions([
