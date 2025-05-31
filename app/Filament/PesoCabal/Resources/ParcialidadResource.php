@@ -16,6 +16,7 @@ use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ParcialidadResource extends Resource
 {
@@ -238,6 +239,19 @@ class ParcialidadResource extends Resource
                                 'estado' => EstadoParcialidad::RECIBIDO,
                                 'fecha_recepcion' => now(),
                             ]);
+                            // Verificar si es la primera parcialidad con pesaje
+                            $hasOtherWeighedParcialidades = $record->pesaje->parcialidades
+                                ->where('id', '!=', $record->id)
+                                ->filter(fn($parcialidad) => $parcialidad->peso_bascula !== null)
+                                ->count() > 0;
+
+                            // Si ninguna otra parcialidad ha sido pesada, actualizar estado del pesaje
+                            if (!$hasOtherWeighedParcialidades) {
+                                $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::CUENTA_ABIERTA]);
+                                $record->pesaje->update([
+                                    'estado' => \App\Enums\EstadoPesaje::CUENTA_ABIERTA,
+                                ]);
+                            }
                         })
                         ->requiresConfirmation()
                         ->visible(fn($record) => $record->estado == EstadoParcialidad::ENVIADO),
@@ -264,16 +278,36 @@ class ParcialidadResource extends Resource
                                 ->maxValue(1000000)
                                 ->numeric()
                                 ->required(),
+                            // Observaciones opcionales
+                            Forms\Components\Textarea::make('observaciones')
+                                ->label('Observaciones')
+                                ->placeholder('Ingrese observaciones si es necesario')
+                                ->maxLength(255),
                         ])
                         ->action(function (Parcialidad $record, array $data) {
                             $record->update([
                                 'peso_bascula' => $data['peso_bascula'],
+                                'observaciones' => $data['observaciones'] ?? null,
                                 'estado' => EstadoParcialidad::PESADO,
                             ]);
                             // Actualizar el estado del pesaje relacionado
                             $record->pesaje->update([
                                 'estado' => \App\Enums\EstadoPesaje::PESAJE_INICIADO,
                             ]);
+                            $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::PESAJE_INICIADO]);
+                            // Validar si es el ultimo pesaje ingresado actualizando el estado de la cuenta a CUENTA_CERRADA
+                            // Check if all pesajes for this account have been initiated
+                            $allPesajesInitiated = !$record->pesaje->cuenta->pesajes()
+                                ->where('estado', '!=', \App\Enums\EstadoPesaje::PESAJE_INICIADO)
+                                ->exists();
+
+                            // If all pesajes have been initiated, close the account
+                            if ($allPesajesInitiated) {
+                                $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CERRADA]);
+                                $record->pesaje->update([
+                                    'estado' => \App\Enums\EstadoPesaje::CUENTA_CERRADA,
+                                ]);
+                            }
                         })
                         ->visible(fn($record) => $record->estado == EstadoParcialidad::RECIBIDO),
                     Tables\Actions\Action::make('finalizar')
@@ -287,7 +321,100 @@ class ParcialidadResource extends Resource
                             // Actualizar estado del transporte y transportista a disponible
                             $record->transporte->update(['disponible' => true]);
                             $record->transportista->update(['disponible' => true]);
+
+                            // Validar si es la ultima parcialidad del pesaje y validar que porcentaje_diferencia sea < a la tolerancia del pesaje
+                            // Si todo es correcto, actualizar el estado del pesaje y la cuenta a CUENTA_CONFIRMADA
+
+                            // Obtener el pesaje relacionado
+                            $pesaje = $record->pesaje;
+
+                            // Verificar si todas las parcialidades del pesaje están finalizadas
+                            $totalParcialidades = $pesaje->parcialidades()
+                                ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
+                                ->count();
+
+                            $parcialidadesFinalizadas = $pesaje->parcialidades()
+                                ->where('estado', EstadoParcialidad::FINALIZADO)
+                                ->count();
+
+                            // Si es la última parcialidad en finalizar
+                            if ($totalParcialidades === $parcialidadesFinalizadas) {
+                                // Calcular el porcentaje de diferencia
+                                $porcentajeDiferencia = abs($pesaje->porcentaje_diferencia);
+                                $tolerancia = $pesaje->tolerancia ?? 0;
+
+                                // Verificar si la diferencia está dentro de la tolerancia
+                                if ($porcentajeDiferencia <= $tolerancia) {
+                                    // Actualizar estado del pesaje a PESAJE_FINALIZADO
+                                    $pesaje->update([
+                                        'estado' => \App\Enums\EstadoPesaje::PESAJE_FINALIZADO,
+                                    ]);
+
+                                    // Actualizar estado de la cuenta a CUENTA_CONFIRMADA
+                                    if ($pesaje->cuenta) {
+                                        $pesaje->cuenta->update([
+                                            'estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CONFIRMADA
+                                        ]);
+                                    }
+
+                                    // Notificar éxito
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Pesaje completado exitosamente')
+                                        ->body("El pesaje se ha finalizado. Diferencia: {$porcentajeDiferencia}% (Tolerancia: {$tolerancia}%)")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    // Notificar que excede la tolerancia
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Tolerancia excedida')
+                                        ->body("La diferencia de peso ({$porcentajeDiferencia}%) excede la tolerancia permitida ({$tolerancia}%)")
+                                        ->warning()
+                                        ->send();
+                                }
+                            }
                         })
+                        ->visible(fn($record) => $record->estado == EstadoParcialidad::PESADO),
+                    Tables\Actions\Action::make('generar_boleta')
+                        ->label('Generar Boleta')
+                        ->icon('heroicon-o-document-text')
+                        ->color('primary')
+                        ->action(function (Parcialidad $record) {
+                            // Cargar todas las relaciones necesarias
+                            $record->load([
+                                'pesaje.cuenta',
+                                'pesaje.medidaPeso',
+                                'transporte',
+                                'transportista'
+                            ]);
+
+                            try {
+                                $pdf = Pdf::loadView('boleta.boleta-pdf', ['parcialidad' => $record])
+                                    ->setPaper('a4', 'portrait');
+
+                                $filename = 'boleta_parcialidad_' . $record->id . '_' . date('Y-m-d_H-i-s') . '.pdf';
+
+                                return response()->streamDownload(function () use ($pdf) {
+                                    echo $pdf->output();
+                                }, $filename, [
+                                    'Content-Type' => 'application/pdf',
+                                ]);
+                            } catch (\Exception $e) {
+                                \Log::error('Error generando boleta PDF: ' . $e->getMessage());
+
+                                // Mostrar notificación de error al usuario
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error al generar la boleta')
+                                    ->body('Hubo un problema al generar el PDF. Intente nuevamente.')
+                                    ->danger()
+                                    ->send();
+
+                                return false;
+                            }
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Generar Boleta PDF')
+                        ->modalDescription('¿Está seguro de que desea generar la boleta PDF para esta parcialidad?')
+                        ->modalSubmitActionLabel('Generar Boleta')
                         ->visible(fn($record) => $record->estado == EstadoParcialidad::PESADO),
                 ])
             ])

@@ -65,7 +65,7 @@ class Pesaje extends Model
     public function getCantidadEntregasAttribute()
     {
         return $this->parcialidades()
-            ->where('estado', EstadoParcialidad::PESADO)
+            ->where('estado', EstadoParcialidad::FINALIZADO)
             ->count();
     }
 
@@ -74,5 +74,43 @@ class Pesaje extends Model
         return $this->parcialidades()
             ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
             ->sum('peso');
+    }
+
+    public function getFechaUltimoEnvioAttribute()
+    {
+        return $this->parcialidades()
+            ->where('estado', EstadoParcialidad::FINALIZADO)
+            ->orderBy('fecha_envio', 'desc')
+            ->first()?->fecha_envio ?? null;
+    }
+
+    public function getNoCuentaAttribute()
+    {
+        return $this->cuenta?->no_cuenta ?? 'No asignada';
+    }
+
+    // Obtener el porcentaje de diferencia entre el peso total y la suma de las parcialidades recibidas
+    public function getPorcentajeDiferenciaAttribute()
+    {
+        $pesoTotal = $this->cantidad_total;
+        $pesoParcialidades = $this->parcialidades()->sum('peso_bascula');
+
+        if ($pesoTotal == 0) {
+            return 0; // Evitar división por cero
+        }
+
+        return (($pesoTotal - $pesoParcialidades) / $pesoTotal) * 100;
+    }
+
+
+    // Al crear un registro establecer el estado como nuevo
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($pesaje) {
+            // Asignar el estado como pendiente
+            $pesaje->estado = EstadoPesaje::NUEVO;
+        });
     }
 }

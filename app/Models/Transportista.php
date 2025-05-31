@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TipoLicencia;
+use App\Enums\EstadoGenericoEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -15,6 +16,7 @@ class Transportista extends Model
     protected $casts = [
         'tipo_licencia' => TipoLicencia::class,
         'disponible' => 'boolean',
+        'estado' => EstadoGenericoEnum::class
     ];
 
     public function agricultor()
@@ -22,14 +24,21 @@ class Transportista extends Model
         return $this->belongsTo(Agricultor::class);
     }
 
-    public function estado()
-    {
-        return $this->belongsTo(Estado::class);
-    }
-
     public function getTipoLicenciaLabelAttribute()
     {
         return $this->tipo_licencia->label();
+    }
+
+    public function aprobar()
+    {
+        $this->estado = EstadoGenericoEnum::APROBADO;
+        $this->save();
+    }
+
+    public function rechazar()
+    {
+        $this->estado = EstadoGenericoEnum::RECHAZADO;
+        $this->save();
     }
 
     // al crear un registro establecer el estado como activo
@@ -37,10 +46,8 @@ class Transportista extends Model
     {
         parent::boot();
         static::creating(function ($transportista) {
-            // Cache the active state ID to avoid repeated queries
-            $transportista->estado_id = \Cache::remember('estado_activo_id', 86400, function () {
-                return Estado::where('nombre', 'ACTIVO')->first()->id;
-            });
+            // Crear con estado pendiente utilizando el enum
+            $transportista->estado = \App\Enums\EstadoGenericoEnum::PENDIENTE->value;
 
             // Assign agricultor_id from authenticated user
             if (auth()->check() && auth()->user()->agricultor->id) {

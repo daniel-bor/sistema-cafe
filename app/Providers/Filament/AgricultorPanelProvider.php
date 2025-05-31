@@ -39,6 +39,7 @@ class AgricultorPanelProvider extends PanelProvider
             ->widgets([])
             ->authMiddleware([
                 Authenticate::class,
+                'filament.panel.access:agricultor',
             ])
             ->middleware([
                 EncryptCookies::class,

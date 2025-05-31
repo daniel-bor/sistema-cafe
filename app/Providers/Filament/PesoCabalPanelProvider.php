@@ -37,6 +37,7 @@ class PesoCabalPanelProvider extends PanelProvider
             ->widgets([])
             ->authMiddleware([
                 Authenticate::class,
+                'filament.panel.access:pesoCabal',
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -48,7 +49,7 @@ class PesoCabalPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                \App\Http\Middleware\SetPostgresSchema::class,
+                // \App\Http\Middleware\SetPostgresSchema::class,
             ])
             ->spa()
             ->passwordReset()

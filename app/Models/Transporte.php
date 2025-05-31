@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoGenericoEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
@@ -14,14 +15,14 @@ class Transporte extends Model
     protected $fillable = ['placa', 'marca', 'color', 'estado_id', 'disponible', 'agricultor_id'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
+    // cast estado como enum
+    protected $casts = [
+        'estado' => EstadoGenericoEnum::class,
+    ];
+
     public function agricultor()
     {
         return $this->belongsTo(Agricultor::class);
-    }
-
-    public function estado()
-    {
-        return $this->belongsTo(Estado::class);
     }
 
     // al crear un registro establecer el estado como activo
@@ -41,6 +42,18 @@ class Transporte extends Model
     //     });
     // }
 
+    public function aprobar()
+    {
+        $this->estado = EstadoGenericoEnum::APROBADO;
+        $this->save();
+    }
+
+    public function rechazar()
+    {
+        $this->estado = EstadoGenericoEnum::RECHAZADO;
+        $this->save();
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -56,12 +69,8 @@ class Transporte extends Model
                 }
             }
 
-            // Cache the active state ID to avoid repeated queries
-            // Asegúrate que el modelo Estado y su tabla 'estados' estén accesibles (deberían estar en 'shared')
-            $transporte->estado_id = \Cache::remember('estado_activo_id', 86400, function () {
-                // Si 'estados' está en 'shared' y 'shared' está en el search_path, esto debería funcionar.
-                return \App\Models\Estado::where('nombre', 'ACTIVO')->where('contexto', 'TRANSPORTE')->firstOrFail()->id; // Sé más específico con el contexto del estado
-            });
+            // Crear con estado pendiente utilizando el enum
+            $transporte->estado = \App\Enums\EstadoGenericoEnum::PENDIENTE->value;
 
             // Assign agricultor_id from authenticated user
             if (auth()->check()) {
@@ -72,11 +81,9 @@ class Transporte extends Model
                     Log::debug("[Transporte creating boot] agricultor_id set to: {$user->agricultor->id}");
                 } else {
                     Log::warning("[Transporte creating boot] User ID {$user->id} does not have an 'agricultor' related model.");
-                    // Considera qué hacer aquí: ¿lanzar una excepción, no crear el transporte, etc.?
                 }
             } else {
                 Log::warning("[Transporte creating boot] No authenticated user found.");
-                // Considera el caso: ¿Debería un transporte crearse sin un usuario autenticado?
             }
         });
     }

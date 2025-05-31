@@ -1,20 +1,19 @@
 <?php
 
-namespace App\Filament\Agricultor\Resources;
+namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
+use App\Filament\Resources\TransportistaResource\Pages;
+use App\Filament\Resources\TransportistaResource\RelationManagers;
 use App\Models\Transportista;
-use Filament\Infolists\Infolist;
+use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Infolists\Infolist;
 use Filament\Infolists;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Agricultor\Resources\TransportistaResource\Pages;
-use App\Filament\Agricultor\Resources\TransportistaResource\RelationManagers;
-use Illuminate\Database\Eloquent\Collection;
 
 class TransportistaResource extends Resource
 {
@@ -22,62 +21,15 @@ class TransportistaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-identification';
 
+    protected static ?string $navigationGroup = 'Agricultores';
+    protected static ?int $navigationSort = 3;
+    protected static ?string $recordTitleAttribute = 'nombre_completo';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('cui')
-                    ->label('CUI')
-                    ->mask('9999999999999')
-                    ->required(),
-                Forms\Components\TextInput::make('nombre_completo')
-                    ->required(),
-                Forms\Components\DatePicker::make('fecha_nacimiento')
-                    ->closeOnDateSelection()
-                    ->displayFormat('d/m/Y')
-                    ->maxDate(now()->subYears(18))
-                    // ->native(false)
-                    ->required(),
-                Forms\Components\Select::make('tipo_licencia')
-                    ->options(\App\Enums\TipoLicencia::labels())
-                    ->native(false)
-                    ->required(),
-                Forms\Components\DatePicker::make('fecha_vencimiento_licencia')
-                    ->closeOnDateSelection()
-                    ->displayFormat('d/m/Y')
-                    ->minDate(now()->addDays(1))
-                    // ->native(false)
-                    ->required(),
-                Forms\Components\TextInput::make('telefono')
-                    ->label('Teléfono')
-                    ->mask('9999-9999')
-                    ->required(),
-                Forms\Components\Select::make('agricultor_id')
-                    ->relationship('agricultor', 'nombre')
-                    ->getOptionLabelFromRecordUsing(fn($record) => $record->nombre_completo)
-                    ->native(false)
-                    ->required()
-                    ->visible(fn() => auth()->user()->rol_id === 2),
-                Forms\Components\Toggle::make('disponible')
-                    ->required()
-                    ->onIcon('heroicon-m-check')
-                    ->offIcon('heroicon-m-x-mark')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->inline(false),
-                Forms\Components\FileUpload::make('foto')
-                    ->image()
-                    ->maxSize(2048)
-                    ->disk('public')
-                    ->directory('transportistas')
-                    ->avatar()
-                    ->imageEditor()
-                    ->imageEditorAspectRatios([
-                        '1:1',
-                    ])
-                    ->imageEditorMode(2)
-                    ->imageResizeMode('cover')
-                    ->imageCropAspectRatio('1:1'),
+                //
             ]);
     }
 
@@ -127,26 +79,24 @@ class TransportistaResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    // Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\BulkAction::make('disable')
-                        ->label('Desactivar')
-                        ->action(function (Collection $records) {
-                            $inactivoId = \App\Models\Estado::where('nombre', 'INACTIVO')->first()?->id ?? 2;
-                            $records->each->update(['estado_id' => $inactivoId]);
-                        })
+                // group
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('aprobar')
+                        ->label('Aprobar')
+                        ->icon('heroicon-o-check')
+                        ->color('success')
                         ->requiresConfirmation()
+                        ->action(fn(Transportista $record) => $record->aprobar()),
+                    Tables\Actions\Action::make('rechazar')
+                        ->label('Rechazar')
+                        ->icon('heroicon-o-x-mark')
                         ->color('danger')
-                        ->icon('heroicon-o-x-mark'),
+                        ->requiresConfirmation()
+                        ->action(fn(Transportista $record) => $record->rechazar()),
+                    Tables\Actions\ViewAction::make(),
                 ]),
-            ]);
+            ])
+            ->bulkActions([]);
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -176,19 +126,10 @@ class TransportistaResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTransportistas::route('/'),
-            // 'create' => Pages\CreateTransportista::route('/create'),
-            // 'edit' => Pages\EditTransportista::route('/{record}/edit'),
+            'index' => Pages\ManageTransportistas::route('/'),
         ];
     }
 
