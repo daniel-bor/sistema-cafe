@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\JwtMiddleware;
+use App\Http\Middleware\InjectDbSessionVariables;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'filament.panel.access' => \App\Http\Middleware\FilamentPanelAccess::class,
         ]);
-        // $middleware->append(JwtMiddleware::class);
+        $middleware->append(InjectDbSessionVariables::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -6,6 +6,7 @@ use App\Http\Controllers\TransporteController;
 use App\Http\Controllers\TransportistaController;
 use App\Http\Controllers\PesajeController;
 use App\Http\Controllers\ParcialidadController;
+use App\Http\Controllers\CuentaController;
 use App\Http\Middleware\JwtMiddleware;
 
 Route::post('register', [JWTAuthController::class, 'register']);
@@ -50,9 +51,20 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     Route::post('parcialidades/{id}/pesar', [ParcialidadController::class, 'pesar']);
     Route::post('parcialidades/{id}/finalizar', [ParcialidadController::class, 'finalizar']);
 
+    // Rutas para el recurso Cuenta
+    Route::apiResource('cuentas', CuentaController::class);
+
+    // Rutas adicionales para acciones específicas de cuentas
+    Route::post('cuentas/{id}/cambiar-estado', [CuentaController::class, 'cambiarEstado']);
+    Route::post('cuentas/{id}/abrir', [CuentaController::class, 'abrir']);
+    Route::post('cuentas/{id}/cerrar', [CuentaController::class, 'cerrar']);
+    Route::post('cuentas/{id}/confirmar', [CuentaController::class, 'confirmar']);
+    Route::get('cuentas-estadisticas', [CuentaController::class, 'estadisticas']);
+
     // Rutas para obtener catálogos
     Route::get('transportistas/catalogos/tipos-licencia', [TransportistaController::class, 'tiposLicencia']);
     Route::get('transportistas/catalogos/estados', [TransportistaController::class, 'estados']);
     Route::get('pesajes/catalogos/general', [PesajeController::class, 'catalogos']);
     Route::get('parcialidades/catalogos/general', [ParcialidadController::class, 'catalogos']);
+    Route::get('cuentas/catalogos/general', [CuentaController::class, 'catalogos']);
 });
