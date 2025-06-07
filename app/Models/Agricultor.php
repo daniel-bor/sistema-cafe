@@ -17,6 +17,26 @@ class Agricultor extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function transportes()
+    {
+        return $this->hasMany(Transporte::class);
+    }
+
+    public function transportistas()
+    {
+        return $this->hasMany(Transportista::class);
+    }
+
+    public function pesajes()
+    {
+        return $this->hasMany(Pesaje::class);
+    }
+
+    public function cuentas()
+    {
+        return $this->hasMany(Cuenta::class);
+    }
+
     // Funciones auxiliares
 
     public function getNombreCompletoAttribute()

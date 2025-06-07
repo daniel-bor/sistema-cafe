@@ -155,7 +155,7 @@ class ParcialidadesRelationManager extends RelationManager
                                 ->success()
                                 ->send();
                         })
-                        ->visible(fn($record) => ($record->pesaje->estado == EstadoPesaje::ACEPTADO || $record->pesaje->estado == EstadoPesaje::PESAJE_INICIADO) && $record->estado == EstadoParcialidad::PENDIENTE),
+                        ->visible(fn($record) => ($record->pesaje->estado == EstadoPesaje::ACEPTADO || $record->pesaje->estado == EstadoPesaje::PESAJE_INICIADO || $record->pesaje->estado == EstadoPesaje::CUENTA_ABIERTA) && $record->estado == EstadoParcialidad::PENDIENTE),
                 ])
             ])
             ->bulkActions([
