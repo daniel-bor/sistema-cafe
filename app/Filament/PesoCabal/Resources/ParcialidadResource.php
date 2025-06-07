@@ -290,23 +290,38 @@ class ParcialidadResource extends Resource
                                 'observaciones' => $data['observaciones'] ?? null,
                                 'estado' => EstadoParcialidad::PESADO,
                             ]);
+
                             // Actualizar el estado del pesaje relacionado
                             $record->pesaje->update([
                                 'estado' => \App\Enums\EstadoPesaje::PESAJE_INICIADO,
                             ]);
                             $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::PESAJE_INICIADO]);
-                            // Validar si es el ultimo pesaje ingresado actualizando el estado de la cuenta a CUENTA_CERRADA
-                            // Check if all pesajes for this account have been initiated
-                            $allPesajesInitiated = !$record->pesaje->cuenta->pesajes()
-                                ->where('estado', '!=', \App\Enums\EstadoPesaje::PESAJE_INICIADO)
-                                ->exists();
 
-                            // If all pesajes have been initiated, close the account
-                            if ($allPesajesInitiated) {
-                                $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CERRADA]);
+                            // Verificar si todas las parcialidades de este pesaje específico han sido pesadas
+                            $totalParcialidadesPesaje = $record->pesaje->parcialidades()
+                                ->where('estado', '!=', EstadoParcialidad::RECHAZADO)
+                                ->count();
+
+                            $parcialidadesPesadas = $record->pesaje->parcialidades()
+                                ->where('estado', EstadoParcialidad::PESADO)
+                                ->count();
+
+                            // Si todas las parcialidades de este pesaje han sido pesadas,
+                            // actualizar el estado del pesaje a PESAJE_FINALIZADO
+                            if ($totalParcialidadesPesaje === $parcialidadesPesadas && $totalParcialidadesPesaje > 0) {
                                 $record->pesaje->update([
-                                    'estado' => \App\Enums\EstadoPesaje::CUENTA_CERRADA,
+                                    'estado' => \App\Enums\EstadoPesaje::PESAJE_FINALIZADO,
                                 ]);
+
+                                // Verificar si todos los pesajes de la cuenta han sido finalizados
+                                $allPesajesFinalizados = !$record->pesaje->cuenta->pesajes()
+                                    ->where('estado', '!=', \App\Enums\EstadoPesaje::PESAJE_FINALIZADO)
+                                    ->exists();
+
+                                // Si todos los pesajes de la cuenta están finalizados, cerrar la cuenta
+                                if ($allPesajesFinalizados) {
+                                    $record->pesaje->cuenta->update(['estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CERRADA]);
+                                }
                             }
                         })
                         ->visible(fn($record) => $record->estado == EstadoParcialidad::RECIBIDO),
@@ -337,8 +352,8 @@ class ParcialidadResource extends Resource
                                 ->where('estado', EstadoParcialidad::FINALIZADO)
                                 ->count();
 
-                            // Si es la última parcialidad en finalizar
-                            if ($totalParcialidades === $parcialidadesFinalizadas) {
+                            // Si es la última parcialidad en finalizar del pesaje
+                            if ($totalParcialidades === $parcialidadesFinalizadas && $totalParcialidades > 0) {
                                 // Calcular el porcentaje de diferencia
                                 $porcentajeDiferencia = abs($pesaje->porcentaje_diferencia);
                                 $tolerancia = $pesaje->tolerancia ?? 0;
@@ -350,14 +365,26 @@ class ParcialidadResource extends Resource
                                         'estado' => \App\Enums\EstadoPesaje::PESAJE_FINALIZADO,
                                     ]);
 
-                                    // Actualizar estado de la cuenta a CUENTA_CONFIRMADA
-                                    if ($pesaje->cuenta) {
+                                    // Verificar si todos los pesajes de la cuenta han sido finalizados
+                                    $allPesajesFinalizados = !$pesaje->cuenta->pesajes()
+                                        ->where('estado', '!=', \App\Enums\EstadoPesaje::PESAJE_FINALIZADO)
+                                        ->exists();
+
+                                    // Si todos los pesajes de la cuenta están finalizados, confirmar la cuenta
+                                    if ($allPesajesFinalizados && $pesaje->cuenta) {
                                         $pesaje->cuenta->update([
                                             'estado' => \App\Enums\EstadoCuentaEnum::CUENTA_CONFIRMADA
                                         ]);
+
+                                        // Notificar que la cuenta ha sido confirmada
+                                        \Filament\Notifications\Notification::make()
+                                            ->title('Cuenta confirmada')
+                                            ->body("Todos los pesajes de la cuenta {$pesaje->cuenta->no_cuenta} han sido completados exitosamente.")
+                                            ->success()
+                                            ->send();
                                     }
 
-                                    // Notificar éxito
+                                    // Notificar éxito del pesaje individual
                                     \Filament\Notifications\Notification::make()
                                         ->title('Pesaje completado exitosamente')
                                         ->body("El pesaje se ha finalizado. Diferencia: {$porcentajeDiferencia}% (Tolerancia: {$tolerancia}%)")
