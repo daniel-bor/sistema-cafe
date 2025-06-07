@@ -23,16 +23,6 @@ class TransporteResource extends Resource
 
     public static function form(Form $form): Form
     {
-        try {
-            $testCount = DB::table('transportes')->count(); // Eloquent/Query Builder
-            Log::debug("[Test Query] Conteo de transportes (Query Builder): " . $testCount);
-
-            $testRaw = DB::select('SELECT COUNT(*) FROM transportes');
-            Log::debug("[Test Query] Conteo de transportes (Raw): " . $testRaw[0]->count);
-        } catch (\Exception $e) {
-            Log::error("[Test Query] FALLO al consultar transportes: " . $e->getMessage());
-        }
-
         return $form
             ->schema([
                 Forms\Components\TextInput::make('placa')
