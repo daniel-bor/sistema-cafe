@@ -14,14 +14,13 @@ class InjectDbSessionVariables
      */
     public function handle(Request $request, Closure $next)
     {
-        // Obtener IP y usuario
-        $ip       = $request->ip();
-        $userId   = Auth::id() ?? 0;
+        $ip     = $request->ip();
+        $userId = Auth::id() ?? 0;
 
-        // Inyectar en la sesión de Postgres
-        // Nota: usamos binds para evitar SQL injection
-        DB::statement('SET app.client_ip = ?', [$ip]);
-        DB::statement('SET app.current_user = ?', [$userId]);
+        // NOTA: aquí interpolamos directamente y ponemos comillas en la IP
+        DB::unprepared("SET \"app.client_ip\" = '{$ip}'");
+        DB::unprepared("SET \"app.current_user\" = '{$userId}'");
+
 
         return $next($request);
     }

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JWTAuthController;
+use App\Http\Controllers\AgricultorController;
 use App\Http\Controllers\TransporteController;
 use App\Http\Controllers\TransportistaController;
 use App\Http\Controllers\PesajeController;
@@ -15,6 +16,15 @@ Route::post('login', [JWTAuthController::class, 'login']);
 Route::middleware([JwtMiddleware::class])->group(function () {
     Route::get('user', [JWTAuthController::class, 'getUser']);
     Route::post('logout', [JWTAuthController::class, 'logout']);
+
+    // Rutas para el recurso Agricultor
+    Route::apiResource('agricultores', AgricultorController::class);
+
+    // Rutas adicionales para acciones específicas de agricultores
+    Route::post('agricultores/{id}/restore', [AgricultorController::class, 'restore']);
+    Route::get('agricultor/profile', [AgricultorController::class, 'profile']);
+    Route::put('agricultor/profile', [AgricultorController::class, 'updateProfile']);
+    Route::get('agricultor/estadisticas', [AgricultorController::class, 'estadisticas']);
 
     // Rutas para el recurso Transporte
     Route::apiResource('transportes', TransporteController::class);

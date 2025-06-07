@@ -52,6 +52,7 @@ class AgricultorPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 \App\Http\Middleware\SetPostgresSchema::class,
+                \App\Http\Middleware\InjectDbSessionVariables::class,
             ])
             ->spa()
             ->sidebarCollapsibleOnDesktop()
