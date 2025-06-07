@@ -106,7 +106,8 @@ class PesajeResource extends Resource
                     Tables\Actions\EditAction::make()
                         ->color('warning')
                         ->visible(fn($record) => $record->estado == EstadoPesaje::NUEVO || $record->estado == EstadoPesaje::RECHAZADO),
-                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                        ->visible(fn($record) => $record->estado == EstadoPesaje::NUEVO || $record->estado == EstadoPesaje::RECHAZADO),
                     // Action para enviar la solicitud de pesaje
                     Tables\Actions\Action::make('Enviar solicitud')
                         ->color('success')

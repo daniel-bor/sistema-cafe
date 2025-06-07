@@ -226,7 +226,7 @@ class PesajeResource extends Resource
                                     if ($porcentajeDiferencia <= $tolerancia) {
                                         // Actualizar estado del pesaje a PESAJE_FINALIZADO
                                         $record->update([
-                                            'estado' => EstadoPesaje::PESAJE_FINALIZADO,
+                                            'estado' => EstadoPesaje::CUENTA_CERRADA,
                                         ]);
 
                                         // Actualizar estado de la cuenta a CUENTA_CONFIRMADA
@@ -274,7 +274,7 @@ class PesajeResource extends Resource
                             // Solo mostrar si todas las parcialidades están finalizadas y el pesaje está iniciado
                             return $totalParcialidades === $parcialidadesFinalizadas &&
                                    $totalParcialidades > 0 &&
-                                   $record->estado == EstadoPesaje::PESAJE_INICIADO;
+                                   $record->estado != EstadoPesaje::CUENTA_CERRADA;
                         }),
                 ])
             ])
